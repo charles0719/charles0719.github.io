@@ -1,102 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Claude Code 插件体系：Marketplace、Plugin、Skill 三层关系梳理</title>
-    <url>/claude-code-marketplace-plugin-skill.html</url>
-    <content><![CDATA[<p>最近在整理自己的 Claude Code 插件仓库，顺便把 Marketplace、Plugin、Skill 这三层关系梳理一下，官方文档写得比较分散，这里做个简单总结。</p>
-<span id="more"></span>
-
-<h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p><strong>Marketplace 是仓库，Plugin 是包，Skill 是功能。</strong></p>
-<p>一个 Marketplace（Git 仓库）里可以包含多个 Plugin，每个 Plugin 下面又可以有多个 Skill。Claude Code 通过这三层结构来组织和分发扩展能力。</p>
-<h2 id="三层结构关系"><a href="#三层结构关系" class="headerlink" title="三层结构关系"></a>三层结构关系</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Marketplace（Git 仓库）</span><br><span class="line"> └── plugins/</span><br><span class="line">      ├── plugin-a/                    ← Plugin A</span><br><span class="line">      │    ├── .claude-plugin/</span><br><span class="line">      │    │    └── plugin.json        ← 插件元信息</span><br><span class="line">      │    └── skills/</span><br><span class="line">      │         ├── skill-1/           ← Skill 1</span><br><span class="line">      │         │    ├── SKILL.md      ← 技能定义（触发条件、行为）</span><br><span class="line">      │         │    └── references/   ← 参考资料</span><br><span class="line">      │         └── skill-2/           ← Skill 2</span><br><span class="line">      │              └── SKILL.md</span><br><span class="line">      └── plugin-b/                    ← Plugin B</span><br><span class="line">           └── ...</span><br></pre></td></tr></table></figure>
-
-<h2 id="每一层是什么"><a href="#每一层是什么" class="headerlink" title="每一层是什么"></a>每一层是什么</h2><h3 id="Marketplace-——-分发渠道"><a href="#Marketplace-——-分发渠道" class="headerlink" title="Marketplace —— 分发渠道"></a>Marketplace —— 分发渠道</h3><p>Marketplace 就是一个 Git 仓库，充当”应用商店”的角色。一个 Marketplace 下可以放多个 Plugin。</p>
-<p>添加 Marketplace：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin marketplace add https://github.com/xxx/your-marketplace.git</span><br></pre></td></tr></table></figure>
-
-<p>添加之后 Claude Code 会把仓库克隆到本地缓存，你就可以从里面安装 Plugin 了。</p>
-<h3 id="Plugin-——-能力包"><a href="#Plugin-——-能力包" class="headerlink" title="Plugin —— 能力包"></a>Plugin —— 能力包</h3><p>Plugin 是一组相关 Skill 的集合，通过 <code>plugin.json</code> 声明元信息（名称、描述、作者）。</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;utility-tools&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;实用工具技能集&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;author&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;charles0719&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>安装 Plugin：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin install utility-tools</span><br></pre></td></tr></table></figure>
-
-<p>安装后，这个 Plugin 下的所有 Skill 就可以被 Claude Code 使用了。</p>
-<h3 id="Skill-——-具体能力"><a href="#Skill-——-具体能力" class="headerlink" title="Skill —— 具体能力"></a>Skill —— 具体能力</h3><p>Skill 是最小的功能单元，每个 Skill 通过 <code>SKILL.md</code> 定义：</p>
-<ul>
-<li><strong>触发条件</strong>：什么情况下自动激活（关键词匹配、用户意图识别等）</li>
-<li><strong>行为描述</strong>：激活后 Claude 应该怎么做</li>
-<li><strong>参考资料</strong>：<code>references/</code> 目录下的文档，作为 Skill 执行时的知识库</li>
-</ul>
-<p>大部分 Skill 是<strong>自动触发</strong>的，不需要手动调用。比如当你问”如何使用 Claude Agent SDK”，对应的 Skill 会自动激活。少数 Skill 通过斜杠命令手动调用，如 <code>/session-harvest</code>。</p>
-<h2 id="实际例子"><a href="#实际例子" class="headerlink" title="实际例子"></a>实际例子</h2><p>以 <a href="https://github.com/yuebanhome/any-agent">any-agent</a> 这个 Marketplace 为例：</p>
-<table>
-<thead>
-<tr>
-<th>Plugin</th>
-<th>包含的 Skill</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>agent-sdk-guide</code></td>
-<td><code>claude-agent-sdk</code>、<code>agent-sdk-custom-tools</code>、<code>agent-sdk-sessions</code>、<code>agent-sdk-advanced</code></td>
-<td>Agent SDK 使用指南，按主题拆分为 4 个 Skill</td>
-</tr>
-<tr>
-<td><code>session-harvest</code></td>
-<td><code>session-harvest</code></td>
-<td>从会话中提取知识，生成可复用的 Skill</td>
-</tr>
-<tr>
-<td><code>claude-plugin-marketplace-setup</code></td>
-<td><code>claude-plugin-marketplace-setup</code></td>
-<td>教你如何创建自己的 Marketplace</td>
-</tr>
-</tbody></table>
-<p>可以看到，一个 Plugin 可以只有一个 Skill（如 <code>session-harvest</code>），也可以有多个 Skill（如 <code>agent-sdk-guide</code> 下有 4 个）。拆分粒度取决于功能的复杂度和关联性。</p>
-<h2 id="类比理解"><a href="#类比理解" class="headerlink" title="类比理解"></a>类比理解</h2><p>如果用手机应用商店来类比：</p>
-<table>
-<thead>
-<tr>
-<th>概念</th>
-<th>类比</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Marketplace</td>
-<td>App Store &#x2F; 应用商店</td>
-<td>分发渠道，可以有多个</td>
-</tr>
-<tr>
-<td>Plugin</td>
-<td>App &#x2F; 应用</td>
-<td>安装&#x2F;卸载的基本单位</td>
-</tr>
-<tr>
-<td>Skill</td>
-<td>App 内的功能模块</td>
-<td>安装 App 后自动获得的具体能力</td>
-</tr>
-</tbody></table>
-<h2 id="如何创建自己的-Marketplace"><a href="#如何创建自己的-Marketplace" class="headerlink" title="如何创建自己的 Marketplace"></a>如何创建自己的 Marketplace</h2><p>如果你也想整理自己的插件，目录结构按上面的规范来就行。核心文件：</p>
-<ul>
-<li><strong>根目录</strong> <code>.claude-plugin/marketplace.json</code>：声明这是一个 Marketplace</li>
-<li><strong>每个 Plugin</strong> <code>.claude-plugin/plugin.json</code>：声明插件元信息</li>
-<li><strong>每个 Skill</strong> <code>SKILL.md</code>：定义触发条件和行为</li>
-</ul>
-<p>具体的 schema 可以参考 <a href="https://github.com/yuebanhome/any-agent/tree/main/plugins/claude-plugin-marketplace-setup">claude-plugin-marketplace-setup</a> 这个 Skill，里面有完整的规范说明。</p>
-]]></content>
-      <categories>
-        <category>技术分享</category>
-      </categories>
-      <tags>
-        <tag>Claude Code</tag>
-        <tag>AI</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Chrome 插件推荐</title>
     <url>/chrome%E6%8F%92%E4%BB%B6.html</url>
     <content><![CDATA[<p>整理了一些日常开发和浏览中常用的 Chrome 插件，按用途分类推荐。</p>
@@ -194,6 +98,102 @@
         <tag>Chrome</tag>
         <tag>插件</tag>
         <tag>效率</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Claude Code 插件体系：Marketplace、Plugin、Skill 三层关系梳理</title>
+    <url>/claude-code-marketplace-plugin-skill.html</url>
+    <content><![CDATA[<p>最近在整理自己的 Claude Code 插件仓库，顺便把 Marketplace、Plugin、Skill 这三层关系梳理一下，官方文档写得比较分散，这里做个简单总结。</p>
+<span id="more"></span>
+
+<h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p><strong>Marketplace 是仓库，Plugin 是包，Skill 是功能。</strong></p>
+<p>一个 Marketplace（Git 仓库）里可以包含多个 Plugin，每个 Plugin 下面又可以有多个 Skill。Claude Code 通过这三层结构来组织和分发扩展能力。</p>
+<h2 id="三层结构关系"><a href="#三层结构关系" class="headerlink" title="三层结构关系"></a>三层结构关系</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Marketplace（Git 仓库）</span><br><span class="line"> └── plugins/</span><br><span class="line">      ├── plugin-a/                    ← Plugin A</span><br><span class="line">      │    ├── .claude-plugin/</span><br><span class="line">      │    │    └── plugin.json        ← 插件元信息</span><br><span class="line">      │    └── skills/</span><br><span class="line">      │         ├── skill-1/           ← Skill 1</span><br><span class="line">      │         │    ├── SKILL.md      ← 技能定义（触发条件、行为）</span><br><span class="line">      │         │    └── references/   ← 参考资料</span><br><span class="line">      │         └── skill-2/           ← Skill 2</span><br><span class="line">      │              └── SKILL.md</span><br><span class="line">      └── plugin-b/                    ← Plugin B</span><br><span class="line">           └── ...</span><br></pre></td></tr></table></figure>
+
+<h2 id="每一层是什么"><a href="#每一层是什么" class="headerlink" title="每一层是什么"></a>每一层是什么</h2><h3 id="Marketplace-——-分发渠道"><a href="#Marketplace-——-分发渠道" class="headerlink" title="Marketplace —— 分发渠道"></a>Marketplace —— 分发渠道</h3><p>Marketplace 就是一个 Git 仓库，充当”应用商店”的角色。一个 Marketplace 下可以放多个 Plugin。</p>
+<p>添加 Marketplace：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin marketplace add https://github.com/xxx/your-marketplace.git</span><br></pre></td></tr></table></figure>
+
+<p>添加之后 Claude Code 会把仓库克隆到本地缓存，你就可以从里面安装 Plugin 了。</p>
+<h3 id="Plugin-——-能力包"><a href="#Plugin-——-能力包" class="headerlink" title="Plugin —— 能力包"></a>Plugin —— 能力包</h3><p>Plugin 是一组相关 Skill 的集合，通过 <code>plugin.json</code> 声明元信息（名称、描述、作者）。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;utility-tools&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;实用工具技能集&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;author&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;charles0719&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>安装 Plugin：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin install utility-tools</span><br></pre></td></tr></table></figure>
+
+<p>安装后，这个 Plugin 下的所有 Skill 就可以被 Claude Code 使用了。</p>
+<h3 id="Skill-——-具体能力"><a href="#Skill-——-具体能力" class="headerlink" title="Skill —— 具体能力"></a>Skill —— 具体能力</h3><p>Skill 是最小的功能单元，每个 Skill 通过 <code>SKILL.md</code> 定义：</p>
+<ul>
+<li><strong>触发条件</strong>：什么情况下自动激活（关键词匹配、用户意图识别等）</li>
+<li><strong>行为描述</strong>：激活后 Claude 应该怎么做</li>
+<li><strong>参考资料</strong>：<code>references/</code> 目录下的文档，作为 Skill 执行时的知识库</li>
+</ul>
+<p>大部分 Skill 是<strong>自动触发</strong>的，不需要手动调用。比如当你问”如何使用 Claude Agent SDK”，对应的 Skill 会自动激活。少数 Skill 通过斜杠命令手动调用，如 <code>/session-harvest</code>。</p>
+<h2 id="实际例子"><a href="#实际例子" class="headerlink" title="实际例子"></a>实际例子</h2><p>以 <a href="https://github.com/yuebanhome/any-agent">any-agent</a> 这个 Marketplace 为例：</p>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>包含的 Skill</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>agent-sdk-guide</code></td>
+<td><code>claude-agent-sdk</code>、<code>agent-sdk-custom-tools</code>、<code>agent-sdk-sessions</code>、<code>agent-sdk-advanced</code></td>
+<td>Agent SDK 使用指南，按主题拆分为 4 个 Skill</td>
+</tr>
+<tr>
+<td><code>session-harvest</code></td>
+<td><code>session-harvest</code></td>
+<td>从会话中提取知识，生成可复用的 Skill</td>
+</tr>
+<tr>
+<td><code>claude-plugin-marketplace-setup</code></td>
+<td><code>claude-plugin-marketplace-setup</code></td>
+<td>教你如何创建自己的 Marketplace</td>
+</tr>
+</tbody></table>
+<p>可以看到，一个 Plugin 可以只有一个 Skill（如 <code>session-harvest</code>），也可以有多个 Skill（如 <code>agent-sdk-guide</code> 下有 4 个）。拆分粒度取决于功能的复杂度和关联性。</p>
+<h2 id="类比理解"><a href="#类比理解" class="headerlink" title="类比理解"></a>类比理解</h2><p>如果用手机应用商店来类比：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>类比</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Marketplace</td>
+<td>App Store &#x2F; 应用商店</td>
+<td>分发渠道，可以有多个</td>
+</tr>
+<tr>
+<td>Plugin</td>
+<td>App &#x2F; 应用</td>
+<td>安装&#x2F;卸载的基本单位</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>App 内的功能模块</td>
+<td>安装 App 后自动获得的具体能力</td>
+</tr>
+</tbody></table>
+<h2 id="如何创建自己的-Marketplace"><a href="#如何创建自己的-Marketplace" class="headerlink" title="如何创建自己的 Marketplace"></a>如何创建自己的 Marketplace</h2><p>如果你也想整理自己的插件，目录结构按上面的规范来就行。核心文件：</p>
+<ul>
+<li><strong>根目录</strong> <code>.claude-plugin/marketplace.json</code>：声明这是一个 Marketplace</li>
+<li><strong>每个 Plugin</strong> <code>.claude-plugin/plugin.json</code>：声明插件元信息</li>
+<li><strong>每个 Skill</strong> <code>SKILL.md</code>：定义触发条件和行为</li>
+</ul>
+<p>具体的 schema 可以参考 <a href="https://github.com/yuebanhome/any-agent/tree/main/plugins/claude-plugin-marketplace-setup">claude-plugin-marketplace-setup</a> 这个 Skill，里面有完整的规范说明。</p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>AI</tag>
       </tags>
   </entry>
   <entry>
