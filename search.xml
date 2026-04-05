@@ -307,4 +307,736 @@
         <tag>工具</tag>
       </tags>
   </entry>
+  <entry>
+    <title>any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么</title>
+    <url>/any-agent-guide.html</url>
+    <content><![CDATA[<p>这篇文章只讲一件事：</p>
+<p><strong>把 <code>any-agent</code> 装到本地之后，Claude Code 到底能帮我们多做什么。</strong></p>
+<p>我会重点回答下面这些更实际的问题：</p>
+<ul>
+<li>装完 Skill 之后，平时到底怎么用</li>
+<li>有了 Skill 和没有 Skill，差别到底在哪</li>
+<li>我怎么通过自然语言或指令，更好地命中这些 Skill</li>
+<li><code>custom-tools</code>、<code>sessions</code>、<code>advanced</code> 这些 Skill，对使用者分别带来什么帮助</li>
+</ul>
+<p>所以这篇文章不会再去重复 README 里的项目说明，而是直接站在<strong>使用者视角</strong>，讲清楚这些 Skill 对日常使用到底有什么价值。</p>
+<span id="more"></span>
+
+<h2 id="先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”"><a href="#先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”" class="headerlink" title="先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”"></a>先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”</h2><p>这是我研究下来最重要的体感。</p>
+<p>装了 <code>any-agent</code> 之后，你并不会得到一个新的 Web 页面，也不会突然出现一个“帮你查 Redis”的独立程序。</p>
+<p>你真正得到的是：</p>
+<ul>
+<li>Claude Code 在某些主题下更容易走对方向</li>
+<li>同样一个问题，更容易命中正确的方法</li>
+<li>对复杂主题的回答更稳定，不容易漏步骤</li>
+</ul>
+<p>所以 Skill 的价值，不是“凭空创造能力”，而是：</p>
+<p><strong>帮助 Claude 更稳定地使用已有能力。</strong></p>
+<h2 id="没有-Skill-和有-Skill，区别到底在哪"><a href="#没有-Skill-和有-Skill，区别到底在哪" class="headerlink" title="没有 Skill 和有 Skill，区别到底在哪"></a>没有 Skill 和有 Skill，区别到底在哪</h2><p>这个对比如果不讲清楚，读者很容易觉得 Skill 很虚。</p>
+<p>我现在的理解是这样的。</p>
+<h3 id="没有-Skill-时"><a href="#没有-Skill-时" class="headerlink" title="没有 Skill 时"></a>没有 Skill 时</h3><p>你当然也可以直接问 Claude：</p>
+<ul>
+<li>“怎么给 Agent SDK 加 custom tools？”</li>
+<li>“怎么恢复 session？”</li>
+<li>“怎么接 MCP server？”</li>
+</ul>
+<p>Claude 也有可能答出来。</p>
+<p>但问题是：</p>
+<ul>
+<li>它有时会泛泛而谈</li>
+<li>有时会漏步骤</li>
+<li>有时会把几个层级混在一起</li>
+<li>有时会不知道你现在到底是在问 tools、session 还是 advanced 配置</li>
+</ul>
+<p>换句话说，它能答，但不一定每次都答得稳。</p>
+<h3 id="有-Skill-时"><a href="#有-Skill-时" class="headerlink" title="有 Skill 时"></a>有 Skill 时</h3><p>当你装了 <code>any-agent</code>，Claude 更容易：</p>
+<ul>
+<li>把你的问题归到正确主题</li>
+<li>使用更贴近这个主题的讲解方式</li>
+<li>更完整地覆盖关键步骤</li>
+<li>在复杂问题里少走弯路</li>
+</ul>
+<p>所以 Skill 最有价值的地方，不是“替你干活”，而是：</p>
+<p><strong>让 Claude 更容易正确理解你现在到底在问什么。</strong></p>
+<h2 id="装完之后，实际是怎么用的"><a href="#装完之后，实际是怎么用的" class="headerlink" title="装完之后，实际是怎么用的"></a>装完之后，实际是怎么用的</h2><p>这也是最关键的使用者视角问题。</p>
+<p>装完 <code>any-agent</code> 之后，你日常使用上主要有两种方式：</p>
+<h3 id="1-自然语言直接问"><a href="#1-自然语言直接问" class="headerlink" title="1. 自然语言直接问"></a>1. 自然语言直接问</h3><p>这是最常见也最适合大多数人的方式。</p>
+<p>比如你可以直接问：</p>
+<ul>
+<li>“怎么给 Claude Agent SDK 加自定义工具？”</li>
+<li>“怎么恢复 Claude Agent SDK 的 session？”</li>
+<li>“怎么做 structured output？”</li>
+<li>“怎么搭一个 Claude Code 插件市场？”</li>
+</ul>
+<p>这时候，如果你的提问命中了某个 Skill 的描述，Claude 就更容易自动走到那个 Skill 对应的知识路径。</p>
+<h3 id="2-手动显式调用某个-Skill"><a href="#2-手动显式调用某个-Skill" class="headerlink" title="2. 手动显式调用某个 Skill"></a>2. 手动显式调用某个 Skill</h3><p>如果你已经知道自己要哪一个 Skill，也可以更明确地叫它出来。</p>
+<p>例如这类形式：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/agent-sdk-guide:claude-agent-sdk</span><br><span class="line">/agent-sdk-guide:agent-sdk-custom-tools</span><br><span class="line">/agent-sdk-guide:agent-sdk-sessions</span><br><span class="line">/agent-sdk-guide:agent-sdk-advanced</span><br><span class="line">/session-harvest:session-harvest</span><br></pre></td></tr></table></figure>
+
+<p>这个方式更适合你已经很明确自己要什么的时候。</p>
+<p>所以从使用者角度来说，Skill 的调用方式并不复杂，本质上就两类：</p>
+<ul>
+<li>自然语言问，等它自动命中</li>
+<li>你自己明确指定 Skill</li>
+</ul>
+<h2 id="以-custom-tools-为例，Skill-到底帮了什么"><a href="#以-custom-tools-为例，Skill-到底帮了什么" class="headerlink" title="以 custom tools 为例，Skill 到底帮了什么"></a>以 <code>custom tools</code> 为例，Skill 到底帮了什么</h2><p>这是我自己最有感触的一个点。</p>
+<p>假设你现在想做的是：</p>
+<blockquote>
+<p>让 Claude Agent SDK 接一个 tool，去查询 Redis 里的业务状态。</p>
+</blockquote>
+<p>如果没有 Skill，你可能会这样问：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">怎么让 Agent 去查 Redis？</span><br></pre></td></tr></table></figure>
+
+<p>Claude 也许会答，但有时候会出现这些问题：</p>
+<ul>
+<li>开始泛泛解释 Redis 是什么</li>
+<li>把 MCP server 和 tool 混在一起讲</li>
+<li>没有讲清楚 <code>tool()</code>、<code>createSdkMcpServer()</code>、<code>mcpServers</code> 之间的顺序</li>
+</ul>
+<p>但有了 <code>agent-sdk-custom-tools</code> 这个 Skill 之后，它更容易走到一条更对路的回答方式：</p>
+<ol>
+<li>先解释 custom tool 是什么</li>
+<li>再解释 <code>tool()</code> 怎么定义</li>
+<li>再解释 <code>createSdkMcpServer()</code> 怎么包装</li>
+<li>再解释 <code>mcpServers</code> 怎么注册到 <code>query()</code></li>
+<li>最后再讲 Redis、数据库、HTTP API 这些真实使用场景</li>
+</ol>
+<p>所以这里 Skill 带来的帮助不是“替你查 Redis”，而是：</p>
+<p><strong>让 Claude 更容易正确带你把“查 Redis 这个能力”接出来。</strong></p>
+<h2 id="以-session-为例，Skill-又帮了什么"><a href="#以-session-为例，Skill-又帮了什么" class="headerlink" title="以 session 为例，Skill 又帮了什么"></a>以 <code>session</code> 为例，Skill 又帮了什么</h2><p>再举一个我觉得很典型的例子。</p>
+<p>假设你问：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">怎么恢复 Claude Agent SDK 的 session？</span><br></pre></td></tr></table></figure>
+
+<p>如果没有专项 Skill，Claude 很容易：</p>
+<ul>
+<li>只讲一两个参数</li>
+<li>讲不清 <code>resume</code> 和 <code>continue</code> 的差别</li>
+<li>忘了提 <code>listSessions()</code>、<code>getSessionMessages()</code> 这些配套能力</li>
+</ul>
+<p>但有了 <code>agent-sdk-sessions</code> 这种 Skill 之后，它更容易直接进入会话这个主题本身：</p>
+<ul>
+<li><code>resume</code> 是什么</li>
+<li><code>continue</code> 是什么</li>
+<li>session 怎么列出来</li>
+<li>历史消息怎么查</li>
+<li>什么场景适合继续，什么场景适合恢复指定会话</li>
+</ul>
+<p>所以对于使用者来说，它的价值是：</p>
+<p><strong>你不需要自己反复把问题问得很精准，Skill 会帮 Claude 更容易进入正确专题。</strong></p>
+<h2 id="以-advanced-为例，为什么-Skill-更有价值"><a href="#以-advanced-为例，为什么-Skill-更有价值" class="headerlink" title="以 advanced 为例，为什么 Skill 更有价值"></a>以 <code>advanced</code> 为例，为什么 Skill 更有价值</h2><p>基础问题还好，复杂问题其实更能体现 Skill 的价值。</p>
+<p>比如你问：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">怎么控制工具权限？</span><br><span class="line">怎么限制预算？</span><br><span class="line">怎么接 hooks？</span><br><span class="line">怎么做 structured output？</span><br></pre></td></tr></table></figure>
+
+<p>这些问题本来就很容易互相串台。</p>
+<p>这时候 <code>agent-sdk-advanced</code> 的作用就出来了。</p>
+<p>它会让 Claude 更容易聚焦在这一层：</p>
+<ul>
+<li><code>permissionMode</code></li>
+<li><code>allowedTools</code></li>
+<li><code>disallowedTools</code></li>
+<li><code>canUseTool</code></li>
+<li>hooks</li>
+<li><code>outputFormat</code></li>
+<li>预算和轮次控制</li>
+</ul>
+<p>对于使用者来说，这类 Skill 的帮助非常直接：</p>
+<ul>
+<li>少走弯路</li>
+<li>少漏关键参数</li>
+<li>少把不同主题搅在一起</li>
+</ul>
+<h2 id="真正的使用方式，不是“学会项目结构”，而是“学会提问题”"><a href="#真正的使用方式，不是“学会项目结构”，而是“学会提问题”" class="headerlink" title="真正的使用方式，不是“学会项目结构”，而是“学会提问题”"></a>真正的使用方式，不是“学会项目结构”，而是“学会提问题”</h2><p>我觉得这是很多人第一次用 <code>any-agent</code> 时最容易忽略的点。</p>
+<p>从使用者角度看，<code>any-agent</code> 不要求你先去背它的目录结构。</p>
+<p>真正更重要的是：</p>
+<p><strong>你是否知道自己现在想问的是哪一类问题。</strong></p>
+<p>比如：</p>
+<h3 id="如果你想了解-Agent-SDK-基础"><a href="#如果你想了解-Agent-SDK-基础" class="headerlink" title="如果你想了解 Agent SDK 基础"></a>如果你想了解 Agent SDK 基础</h3><p>就问：</p>
+<ul>
+<li>“给我讲一下 Claude Agent SDK 的基本用法”</li>
+<li>“怎么跑一个最小的 Agent SDK demo？”</li>
+<li>“<code>query()</code> 返回的是什么？”</li>
+</ul>
+<h3 id="如果你想接工具"><a href="#如果你想接工具" class="headerlink" title="如果你想接工具"></a>如果你想接工具</h3><p>就问：</p>
+<ul>
+<li>“怎么给 Claude Agent SDK 加 custom tools？”</li>
+<li>“怎么把 Redis 查询封装成 tool？”</li>
+<li>“<code>createSdkMcpServer()</code> 应该怎么写？”</li>
+</ul>
+<h3 id="如果你想做多轮会话"><a href="#如果你想做多轮会话" class="headerlink" title="如果你想做多轮会话"></a>如果你想做多轮会话</h3><p>就问：</p>
+<ul>
+<li>“怎么恢复 Claude Agent SDK 的 session？”</li>
+<li>“<code>resume</code> 和 <code>continue</code> 有什么区别？”</li>
+<li>“怎么查看历史会话？”</li>
+</ul>
+<h3 id="如果你想做高级配置"><a href="#如果你想做高级配置" class="headerlink" title="如果你想做高级配置"></a>如果你想做高级配置</h3><p>就问：</p>
+<ul>
+<li>“怎么限制 Agent 的工具权限？”</li>
+<li>“怎么做 structured output？”</li>
+<li>“怎么控制最大轮次和预算？”</li>
+</ul>
+<p>你会发现，Skill 对使用者最实际的帮助，其实就体现在这里：</p>
+<p><strong>同样是问问题，装了 Skill 之后，更容易一问就问到点上。</strong></p>
+<h2 id="session-harvest-这种-Skill-对使用者又有什么意义"><a href="#session-harvest-这种-Skill-对使用者又有什么意义" class="headerlink" title="session-harvest 这种 Skill 对使用者又有什么意义"></a><code>session-harvest</code> 这种 Skill 对使用者又有什么意义</h2><p>前面几个 Skill 都是“教你怎么做”的。</p>
+<p>但 <code>session-harvest</code> 有点不一样，它更偏“把你已经摸索出的经验沉淀下来”。</p>
+<p>它更适合这种时刻：</p>
+<ul>
+<li>你已经和 Claude 摸索出一套很顺的工作流</li>
+<li>你不想下次再从头讲</li>
+<li>你希望把这套经验变成未来可复用的 Skill</li>
+</ul>
+<p>所以它对使用者的帮助不是：</p>
+<ul>
+<li>“教你一个新知识点”</li>
+</ul>
+<p>而是：</p>
+<ul>
+<li>“帮你把一次成功经验固化下来”</li>
+</ul>
+<p>这类 Skill 对长期重度使用者特别有价值。</p>
+<h2 id="我现在会怎么给别人解释-any-agent-的作用"><a href="#我现在会怎么给别人解释-any-agent-的作用" class="headerlink" title="我现在会怎么给别人解释 any-agent 的作用"></a>我现在会怎么给别人解释 <code>any-agent</code> 的作用</h2><p>如果现在让我只用一句使用者视角的话来解释，我会这么说：</p>
+<p><strong><code>any-agent</code> 的作用，不是替你直接完成业务，而是让 Claude Code 在 Agent 相关主题下更容易走对方法。</strong></p>
+<p>再说得更直白一点：</p>
+<ul>
+<li>没有它，Claude 也许也能答</li>
+<li>有了它，Claude 更容易答得更准、更稳、更像一个真正懂这个专题的人</li>
+</ul>
+<h2 id="对使用者来说，最实用的价值是什么"><a href="#对使用者来说，最实用的价值是什么" class="headerlink" title="对使用者来说，最实用的价值是什么"></a>对使用者来说，最实用的价值是什么</h2><p>最后我想把它再压缩成几个非常实际的点。</p>
+<p>对使用者来说，装了 <code>any-agent</code> 之后，最实用的价值通常是：</p>
+<h3 id="1-复杂主题更容易命中正确方向"><a href="#1-复杂主题更容易命中正确方向" class="headerlink" title="1. 复杂主题更容易命中正确方向"></a>1. 复杂主题更容易命中正确方向</h3><p>尤其是 <code>custom tools</code>、<code>session</code>、<code>advanced</code> 这种很容易混的主题。</p>
+<h3 id="2-提问成本更低"><a href="#2-提问成本更低" class="headerlink" title="2. 提问成本更低"></a>2. 提问成本更低</h3><p>你不需要每次都把问题问得特别精确，Skill 会帮 Claude 更容易进入正确专题。</p>
+<h3 id="3-回答更稳定"><a href="#3-回答更稳定" class="headerlink" title="3. 回答更稳定"></a>3. 回答更稳定</h3><p>特别是在需要分步骤解释的时候，更不容易漏关键环节。</p>
+<h3 id="4-更适合长期积累"><a href="#4-更适合长期积累" class="headerlink" title="4. 更适合长期积累"></a>4. 更适合长期积累</h3><p>像 <code>session-harvest</code> 这种 Skill，能把一次次临时对话里的经验逐步沉淀下来。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>我现在反而不太喜欢把 <code>any-agent</code> 介绍成一个“项目说明文”的对象。</p>
+<p>因为对真正要用它的人来说，更重要的不是“它目录长什么样”，而是：</p>
+<ul>
+<li>装完之后我怎么问</li>
+<li>它到底帮我更好地解决了什么问题</li>
+<li>为什么我同样一句话，装了它之后更容易得到正确答案</li>
+</ul>
+<p>如果从这个角度看，<code>any-agent</code> 的价值其实很清楚：</p>
+<p><strong>它不是替你做业务的系统，而是帮助 Claude 更稳定地成为某些专题下的好助手。</strong></p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>any-agent</tag>
+        <tag>Skill</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP / tools / agent</title>
+    <url>/claude-agent-sdk-intro.html</url>
+    <content><![CDATA[<p>最近在系统整理 Claude Agent SDK。刚开始接触这套东西时，我最大的感受不是“代码很难”，而是“概念很容易缠在一起”。</p>
+<p>很多文章会同时出现这些词：</p>
+<ul>
+<li><code>query()</code></li>
+<li><code>session</code></li>
+<li><code>custom tools</code></li>
+<li><code>MCP server</code></li>
+<li><code>agent</code></li>
+<li><code>skill</code></li>
+</ul>
+<p>第一次读的时候，如果没有顺序，很容易一篇看完只记住了名词，没有真正形成心智模型。</p>
+<p>所以这篇文章我不讲 Skill，不讲插件市场，也不讲 <code>any-agent</code>。我们只把 Claude Agent SDK 本身这一层拉直，用 5 个块来建立基础认知：</p>
+<ol>
+<li>什么是 Claude Agent SDK</li>
+<li>什么时候应该用它</li>
+<li>最小 <code>query()</code> 调用怎么跑</li>
+<li><code>session</code> 是什么，以及怎么做一个最小 demo</li>
+<li>如何扩展出 <code>MCP server</code>、<code>custom tools</code> 和 <code>agent</code></li>
+</ol>
+<span id="more"></span>
+
+<h2 id="1-什么是-Claude-Agent-SDK"><a href="#1-什么是-Claude-Agent-SDK" class="headerlink" title="1. 什么是 Claude Agent SDK"></a>1. 什么是 Claude Agent SDK</h2><p>如果一句话概括：</p>
+<p><strong>Claude Agent SDK 是一个让模型不只是“回答一句话”，而是能够带着上下文、工具和角色去执行任务的运行框架。</strong></p>
+<p>普通模型调用通常更像：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">输入一段文本 -&gt; 返回一段文本</span><br></pre></td></tr></table></figure>
+
+<p>而 Claude Agent SDK 更像：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">给出一个任务 -&gt; Agent 在指定环境里运行 -&gt; 持续返回过程消息和最终结果</span><br></pre></td></tr></table></figure>
+
+<p>所以它和普通模型 API 最大的区别，不只是接口名字不一样，而是它多了一层“Agent 运行时”。</p>
+<p>这个运行时通常包含：</p>
+<ul>
+<li>上下文</li>
+<li>会话能力</li>
+<li>工具能力</li>
+<li>角色能力</li>
+<li>权限控制</li>
+<li>流式消息</li>
+</ul>
+<p>你可以把它简单理解成：</p>
+<ul>
+<li>普通模型 API 更像“问答接口”</li>
+<li>Agent SDK 更像“任务执行框架”</li>
+</ul>
+<h2 id="2-什么时候应该用它"><a href="#2-什么时候应该用它" class="headerlink" title="2. 什么时候应该用它"></a>2. 什么时候应该用它</h2><p>并不是所有场景都需要 Claude Agent SDK。</p>
+<p>如果你的需求只是：</p>
+<ul>
+<li>翻译</li>
+<li>润色</li>
+<li>单轮问答</li>
+<li>一次性总结</li>
+</ul>
+<p>那普通模型 API 往往已经足够。</p>
+<p>Claude Agent SDK 更适合这些场景：</p>
+<ul>
+<li>你希望模型能连续记住上下文</li>
+<li>你希望模型能调用你的工具</li>
+<li>你希望模型不是只聊天，而是真正“做事”</li>
+<li>你希望模型能分角色工作</li>
+<li>你希望对权限和行为边界做控制</li>
+</ul>
+<p>换句话说，只要你的需求开始出现下面这些表达，就可以开始考虑 Agent SDK：</p>
+<ul>
+<li>“帮我继续上一次分析”</li>
+<li>“帮我查一下系统状态”</li>
+<li>“帮我调用我自己的服务”</li>
+<li>“帮我根据真实数据给出结论”</li>
+<li>“帮我以研究员&#x2F;审查员&#x2F;运维助手的视角来处理”</li>
+</ul>
+<p>比如这些就很典型：</p>
+<ul>
+<li>让 Agent 查询 Redis 里的任务状态，并给出中文总结</li>
+<li>让 Agent 查数据库中的业务记录，再给出排查建议</li>
+<li>让 Agent 继续上一次的研究上下文，而不是每次重新开始</li>
+<li>让 Agent 以不同角色输出不同风格的结论</li>
+</ul>
+<h2 id="3-最小-query-调用怎么跑"><a href="#3-最小-query-调用怎么跑" class="headerlink" title="3. 最小 query() 调用怎么跑"></a>3. 最小 <code>query()</code> 调用怎么跑</h2><p>Claude Agent SDK 最核心的入口一般就是 <code>query()</code>。</p>
+<p>一个最小 demo 可以长这样：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; query &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请用中文解释 query() 是做什么的，限制在三句话内。&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">3</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> <span class="title function_">await</span> (<span class="keyword">const</span> message <span class="keyword">of</span> conversation) &#123;</span><br><span class="line">  <span class="keyword">if</span> (message.<span class="property">type</span> === <span class="string">&quot;assistant&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> block <span class="keyword">of</span> message.<span class="property">message</span>.<span class="property">content</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (block.<span class="property">type</span> === <span class="string">&quot;text&quot;</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(block.<span class="property">text</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (message.<span class="property">type</span> === <span class="string">&quot;result&quot;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(message.<span class="property">result</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里最重要的理解是：</p>
+<ul>
+<li><code>query()</code> 启动的是一次 Agent 任务</li>
+<li>返回值不是一个普通 Promise，而是一个消息流</li>
+<li>你会陆续收到初始化信息、assistant 消息、最终结果</li>
+</ul>
+<p>也就是说，它不是“我调一下，直接拿字符串”，而是“我启动一个过程，然后不断接收过程中的消息”。</p>
+<h3 id="options-里最先该看懂的几个参数"><a href="#options-里最先该看懂的几个参数" class="headerlink" title="options 里最先该看懂的几个参数"></a><code>options</code> 里最先该看懂的几个参数</h3><p>第一次写 demo 时，其实不需要把所有参数都记全。最先看懂下面几个就够了。</p>
+<h4 id="cwd"><a href="#cwd" class="headerlink" title="cwd"></a><code>cwd</code></h4><p>告诉 Agent 当前任务运行在什么目录上下文里。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">cwd</span>: process.<span class="title function_">cwd</span>()</span><br></pre></td></tr></table></figure>
+
+<h4 id="permissionMode"><a href="#permissionMode" class="headerlink" title="permissionMode"></a><code>permissionMode</code></h4><p>决定 Agent 的权限模式。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>入门 demo 里这个模式很适合，因为它更保守，更偏“先规划，再执行”。</p>
+<h4 id="maxTurns"><a href="#maxTurns" class="headerlink" title="maxTurns"></a><code>maxTurns</code></h4><p>限制这次任务最多跑几轮。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">maxTurns</span>: <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="model"><a href="#model" class="headerlink" title="model"></a><code>model</code></h4><p>如果你有自己的模型路由，也可以显式指定。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">model</span>: <span class="string">&quot;your-model-name&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="第一个-demo-应该重点观察什么"><a href="#第一个-demo-应该重点观察什么" class="headerlink" title="第一个 demo 应该重点观察什么"></a>第一个 demo 应该重点观察什么</h3><p>我建议第一次跑 <code>query()</code> 时，至少确认这几件事：</p>
+<ol>
+<li>有没有正常启动</li>
+<li>有没有输出 assistant 消息</li>
+<li>有没有最终 <code>result</code></li>
+<li>当前模型是不是你预期的那个</li>
+</ol>
+<p>只要这几件事打通，你就已经真正把 Claude Agent SDK 跑起来了。</p>
+<h2 id="4-session-是什么"><a href="#4-session-是什么" class="headerlink" title="4. session 是什么"></a>4. <code>session</code> 是什么</h2><p>如果说 <code>query()</code> 让你第一次把 Claude Agent SDK 跑起来，那么 <code>session</code> 才是让你真正感觉“它不是普通单轮问答”的地方。</p>
+<h3 id="session-是什么"><a href="#session-是什么" class="headerlink" title="session 是什么"></a><code>session</code> 是什么</h3><p>一句话解释：</p>
+<p><strong>session 是 Claude Agent SDK 用来保存和延续任务上下文的能力。</strong></p>
+<p>没有 session 时，更像：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">问一个问题 -&gt; 回一个答案 -&gt; 结束</span><br></pre></td></tr></table></figure>
+
+<p>有了 session 之后，更像：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">第一轮建立背景 -&gt; 第二轮继续追问 -&gt; 第三轮接着往下做</span><br></pre></td></tr></table></figure>
+
+<p>所以 session 最核心的价值，不是“多了一个技术名词”，而是：</p>
+<p><strong>让 Agent 可以持续在同一个任务上下文里工作。</strong></p>
+<h3 id="为什么它值得入门阶段就掌握"><a href="#为什么它值得入门阶段就掌握" class="headerlink" title="为什么它值得入门阶段就掌握"></a>为什么它值得入门阶段就掌握</h3><p>很多真实任务天生就是多轮的：</p>
+<ul>
+<li>研究一个项目</li>
+<li>排查一个问题</li>
+<li>写一个方案</li>
+<li>跟着一个分析过程不断补充条件</li>
+</ul>
+<p>如果每次都从零开始，模型虽然也能回答，但体验会非常碎。</p>
+<p>session 解决的就是这个问题。</p>
+<h3 id="Claude-Agent-SDK-里常见的-session-能力"><a href="#Claude-Agent-SDK-里常见的-session-能力" class="headerlink" title="Claude Agent SDK 里常见的 session 能力"></a>Claude Agent SDK 里常见的 session 能力</h3><p>最常见的几类动作包括：</p>
+<ul>
+<li><code>continue</code><br>继续当前目录下最近一次会话</li>
+<li><code>resume</code><br>恢复指定 session</li>
+<li><code>listSessions()</code><br>列出历史 session</li>
+<li><code>getSessionMessages()</code><br>查看某个 session 的消息记录</li>
+</ul>
+<h3 id="一个最小-session-demo"><a href="#一个最小-session-demo" class="headerlink" title="一个最小 session demo"></a>一个最小 session demo</h3><p>第一步，先创建一个会话，让 Agent 记住背景：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请记住：我的研究主题是 Agent SDK，我重点关注 session、tools 和 agent。然后用中文确认你记住了什么。&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="attr">persistSession</span>: <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>第二步，在下一次调用里继续最近的会话：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;我们刚才重点关注的 3 个主题分别是什么？&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">continue</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">2</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里最关键的参数就是：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="attr">continue</span>: <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>它的意思不是“继续一段普通聊天”，而是：</p>
+<p><strong>继续当前目录下最近一次 Agent 会话。</strong></p>
+<h3 id="再进一步：查看历史-session"><a href="#再进一步：查看历史-session" class="headerlink" title="再进一步：查看历史 session"></a>再进一步：查看历史 session</h3><p>如果只会继续，还不够。</p>
+<p>很多时候你还会想知道：</p>
+<ul>
+<li>当前目录下到底有哪些 session</li>
+<li>最近一次 session 的 ID 是什么</li>
+<li>某个 session 里都发生了什么</li>
+</ul>
+<p>这时候就会用到：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; listSessions, getSessionMessages &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> sessions = <span class="keyword">await</span> <span class="title function_">listSessions</span>(&#123;</span><br><span class="line">  <span class="attr">dir</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">  <span class="attr">limit</span>: <span class="number">10</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> messages = <span class="keyword">await</span> <span class="title function_">getSessionMessages</span>(sessionId, &#123; <span class="attr">limit</span>: <span class="number">8</span> &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这类能力特别适合：</p>
+<ul>
+<li>做调试</li>
+<li>做研究记录</li>
+<li>做多轮任务回放</li>
+</ul>
+<h3 id="一个更适合读者理解的-demo-组织方式"><a href="#一个更适合读者理解的-demo-组织方式" class="headerlink" title="一个更适合读者理解的 demo 组织方式"></a>一个更适合读者理解的 demo 组织方式</h3><p>如果你自己写 demo，我会很建议做成这种命令风格：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm run session:start</span><br><span class="line">npm run session:<span class="built_in">continue</span></span><br><span class="line">npm run session:list</span><br><span class="line">npm run session:inspect</span><br></pre></td></tr></table></figure>
+
+<p>这样好处很明显：</p>
+<ul>
+<li>概念和动作是一一对应的</li>
+<li>读者看起来不抽象</li>
+<li>每个动作都能单独验证</li>
+</ul>
+<h2 id="5-如何扩展出-MCP-server、custom-tools-和-agent"><a href="#5-如何扩展出-MCP-server、custom-tools-和-agent" class="headerlink" title="5. 如何扩展出 MCP server、custom tools 和 agent"></a>5. 如何扩展出 <code>MCP server</code>、<code>custom tools</code> 和 <code>agent</code></h2><p>当你已经理解：</p>
+<ul>
+<li><code>query()</code> 是任务入口</li>
+<li><code>session</code> 是连续上下文能力</li>
+</ul>
+<p>下一步最值得进入的，就是工具和角色这一层。</p>
+<h3 id="5-1-custom-tools-是什么"><a href="#5-1-custom-tools-是什么" class="headerlink" title="5.1 custom tools 是什么"></a>5.1 <code>custom tools</code> 是什么</h3><p>最直接的理解就是：</p>
+<p><strong>把你自己的能力暴露给 Agent 调用。</strong></p>
+<p>这个能力可以是：</p>
+<ul>
+<li>查数据库</li>
+<li>查 Redis</li>
+<li>调 HTTP API</li>
+<li>调内部服务</li>
+<li>查日志</li>
+<li>改任务状态</li>
+</ul>
+<p>所以 custom tool 本质上不等于“数据库工具”。数据库只是其中一种使用场景。</p>
+<p>一个最小例子：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; tool &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; z &#125; <span class="keyword">from</span> <span class="string">&quot;zod/v4&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> searchUsers = <span class="title function_">tool</span>(</span><br><span class="line">  <span class="string">&quot;search-users&quot;</span>,</span><br><span class="line">  <span class="string">&quot;Search users by keyword&quot;</span>,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">keyword</span>: z.<span class="title function_">string</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="title function_">async</span> (&#123; keyword &#125;) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> users = [</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">name</span>: <span class="string">&quot;Zhang San&quot;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">name</span>: <span class="string">&quot;Alice Wang&quot;</span> &#125;</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> matches = users.<span class="title function_">filter</span>(<span class="function">(<span class="params">user</span>) =&gt;</span> user.<span class="property">name</span>.<span class="title function_">includes</span>(keyword));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">content</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">type</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">          <span class="attr">text</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(matches, <span class="literal">null</span>, <span class="number">2</span>)</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这里查的是内存数组。</p>
+<p>但如果把内部逻辑换成：</p>
+<ul>
+<li>查 MySQL</li>
+<li>查 PostgreSQL</li>
+<li>查 Redis</li>
+</ul>
+<p>那它就能变成真实业务能力。</p>
+<h3 id="5-2-MCP-server-是什么"><a href="#5-2-MCP-server-是什么" class="headerlink" title="5.2 MCP server 是什么"></a>5.2 <code>MCP server</code> 是什么</h3><p><code>MCP</code> 是 <code>Model Context Protocol</code>。</p>
+<p>可以把它理解成：</p>
+<p><strong>给模型提供工具的一套标准接口。</strong></p>
+<p>而 <code>MCP server</code> 就是按这套协议，把一组工具暴露给模型调用的服务层。</p>
+<p>所以：</p>
+<ul>
+<li>它不只是浏览器、Postman 这种大工具才会有</li>
+<li>你自己定义的一组业务 tool，也完全可以组成一个 MCP server</li>
+</ul>
+<p>比如：</p>
+<ul>
+<li>Redis 任务状态查询 MCP server</li>
+<li>订单查询 MCP server</li>
+<li>日志检索 MCP server</li>
+</ul>
+<h3 id="5-3-createSdkMcpServer-到底在做什么"><a href="#5-3-createSdkMcpServer-到底在做什么" class="headerlink" title="5.3 createSdkMcpServer() 到底在做什么"></a>5.3 <code>createSdkMcpServer()</code> 到底在做什么</h3><p>在 Claude Agent SDK 里，<code>createSdkMcpServer()</code> 是一个非常关键的辅助方法。</p>
+<p>它干的事情可以用一句话概括：</p>
+<p><strong>把你定义好的 tools 封装成一个进程内 MCP server，并在当前会话里注册给 Agent 使用。</strong></p>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createSdkMcpServer, query, tool &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> searchUsers = <span class="title function_">tool</span>(...);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> server = <span class="title function_">createSdkMcpServer</span>(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;demo-tools&quot;</span>,</span><br><span class="line">  <span class="attr">tools</span>: [searchUsers]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请查询用户&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">mcpServers</span>: &#123;</span><br><span class="line">      <span class="string">&quot;demo-tools&quot;</span>: server</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里可以记成三步：</p>
+<ol>
+<li>用 <code>tool()</code> 定义能力</li>
+<li>用 <code>createSdkMcpServer()</code> 把能力装进一个 MCP server</li>
+<li>用 <code>mcpServers</code> 把它注册给当前 <code>query()</code></li>
+</ol>
+<h3 id="5-4-agent-是什么"><a href="#5-4-agent-是什么" class="headerlink" title="5.4 agent 是什么"></a>5.4 <code>agent</code> 是什么</h3><p><code>agent</code> 更像“角色配置”。</p>
+<p>比如你可以定义：</p>
+<ul>
+<li><code>researcher</code></li>
+<li><code>reviewer</code></li>
+<li><code>ops-assistant</code></li>
+</ul>
+<p>不同角色可以有不同的：</p>
+<ul>
+<li>prompt</li>
+<li>工具</li>
+<li>模型</li>
+<li>最大轮次</li>
+</ul>
+<p>一个最小例子：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;帮我分析一个项目的研究重点&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">agent</span>: <span class="string">&quot;researcher&quot;</span>,</span><br><span class="line">    <span class="attr">agents</span>: &#123;</span><br><span class="line">      <span class="attr">researcher</span>: &#123;</span><br><span class="line">        <span class="attr">description</span>: <span class="string">&quot;Research-oriented assistant&quot;</span>,</span><br><span class="line">        <span class="attr">prompt</span>: <span class="string">&quot;Explain clearly and stay concise.&quot;</span>,</span><br><span class="line">        <span class="attr">tools</span>: []</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意：</p>
+<ul>
+<li><code>agents</code> 用来定义有哪些角色</li>
+<li><code>agent</code> 用来指定本次任务用哪个角色</li>
+</ul>
+<h3 id="一张表记住这一层关系"><a href="#一张表记住这一层关系" class="headerlink" title="一张表记住这一层关系"></a>一张表记住这一层关系</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>它是什么</th>
+<th>它解决什么问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>query()</code></td>
+<td>Agent 任务入口</td>
+<td>启动一次任务并接收消息流</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>连续上下文能力</td>
+<td>让 Agent 可以继续同一个任务，而不是每轮从零开始</td>
+</tr>
+<tr>
+<td><code>custom tool</code></td>
+<td>具体能力</td>
+<td>让 Agent 能查数据、调系统、改状态</td>
+</tr>
+<tr>
+<td><code>MCP server</code></td>
+<td>工具组织方式</td>
+<td>把一组能力按统一协议暴露给 Agent</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>角色配置</td>
+<td>让不同任务有不同风格和边界</td>
+</tr>
+</tbody></table>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>如果你第一次接触 Claude Agent SDK，我会很建议先按这 5 块来建立基础心智模型：</p>
+<ol>
+<li>它是什么</li>
+<li>什么时候用</li>
+<li><code>query()</code> 怎么跑</li>
+<li><code>session</code> 怎么理解和验证</li>
+<li><code>MCP server</code>、<code>custom tools</code>、<code>agent</code> 分别是什么</li>
+</ol>
+<p>只要这 5 块打稳了，后面你再去看：</p>
+<ul>
+<li>Skill</li>
+<li>插件市场</li>
+<li>第三方方法仓库</li>
+</ul>
+<p>就会顺很多，也不会再把所有概念混在一起。</p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>AI</tag>
+        <tag>Claude Agent SDK</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何从零创建一个简单 Skill：目录结构、SKILL.md 和最小可用模板</title>
+    <url>/claude-code-skill-create-guide.html</url>
+    <content><![CDATA[<p>最近在研究 Claude Code 里的 Skill 机制，发现很多资料都讲到了 Skill 的作用，但第一次真正准备自己动手写时，脑子里最常见的问题其实是这些：</p>
+<ul>
+<li>一个 Skill 最少要包含哪些东西？</li>
+<li><code>SKILL.md</code> 里到底该写什么？</li>
+<li><code>description</code> 为什么这么重要？</li>
+<li>我看到有些地方还有 <code>steps</code>、<code>references</code>、<code>scripts</code>，这些是不是必须的？</li>
+</ul>
+<p>这篇文章就不再泛泛讲概念，而是直接回答一个更实用的问题：</p>
+<p><strong>如果你现在就想创建一个最简单、但真的能工作的 Skill，应该怎么做。</strong></p>
+<span id="more"></span>
+
+<h2 id="先说结论：一个-Skill-最少只需要两样东西"><a href="#先说结论：一个-Skill-最少只需要两样东西" class="headerlink" title="先说结论：一个 Skill 最少只需要两样东西"></a>先说结论：一个 Skill 最少只需要两样东西</h2><p>如果你只追求“先跑起来一个最小可用版本”，那真正的必需项其实非常少：</p>
+<ol>
+<li>一个 Skill 目录</li>
+<li>一个 <code>SKILL.md</code></li>
+</ol>
+<p>最小结构就是：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">└── SKILL.md</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，第一次创建 Skill，不需要一上来就准备很多附加文件。</p>
+<h2 id="SKILL-md-里最关键的两部分"><a href="#SKILL-md-里最关键的两部分" class="headerlink" title="SKILL.md 里最关键的两部分"></a><code>SKILL.md</code> 里最关键的两部分</h2><p>每个 Skill 最核心的文件就是 <code>SKILL.md</code>。</p>
+<p>它通常包含两部分：</p>
+<ol>
+<li>YAML frontmatter</li>
+<li>Markdown 正文</li>
+</ol>
+<p>最小模板可以长这样：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or check whether a Redis key exists.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify which Redis data or key pattern the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> Explain findings in concise Chinese.</span><br><span class="line"><span class="bullet">4.</span> If the user wants write operations, confirm scope before suggesting changes.</span><br></pre></td></tr></table></figure>
+
+<p>这里最关键的只有两个 frontmatter 字段：</p>
+<ul>
+<li><code>name</code></li>
+<li><code>description</code></li>
+</ul>
+<h2 id="name-是什么"><a href="#name-是什么" class="headerlink" title="name 是什么"></a><code>name</code> 是什么</h2><p><code>name</code> 是这个 Skill 的标识名。</p>
+<p>它有两个非常实用的约束：</p>
+<ul>
+<li>通常应该和 Skill 目录名保持一致</li>
+<li>最好使用小写字母和连字符</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">redis-status-helper</span></span><br></pre></td></tr></table></figure>
+
+<p>我自己的建议是：</p>
+<ul>
+<li>名字短一点</li>
+<li>尽量让人一眼知道它是干什么的</li>
+<li>不要起得太抽象</li>
+</ul>
+<h2 id="description-为什么特别重要"><a href="#description-为什么特别重要" class="headerlink" title="description 为什么特别重要"></a><code>description</code> 为什么特别重要</h2><p>这是我觉得第一次写 Skill 时最该重视的一点。</p>
+<p><code>description</code> 不是一个普通说明字段，它其实是 Skill 最关键的触发入口之一。</p>
+<p>Claude 会读这段描述，来判断：</p>
+<ul>
+<li>什么时候应该激活这个 Skill</li>
+<li>这个 Skill 适合处理什么问题</li>
+</ul>
+<p>所以如果你把 <code>description</code> 写得很空泛，比如：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Help with coding.&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>那这个 Skill 对模型来说就很难“命中得准”。</p>
+<p>更好的写法应该是：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Use when the user asks how to add custom tools to Claude Agent SDK, mentions createSdkMcpServer, or wants to connect Redis, databases, or internal APIs as tools.&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里有两个关键点：</p>
+<ul>
+<li>写清楚用户会怎么问</li>
+<li>写清楚这个 Skill 适合在哪些场景下触发</li>
+</ul>
+<p>所以你可以把 <code>description</code> 理解成：</p>
+<p><strong>Skill 的主要触发说明。</strong></p>
+<h2 id="正文该写什么"><a href="#正文该写什么" class="headerlink" title="正文该写什么"></a>正文该写什么</h2><p>很多人第一次写 Skill 时，会把正文写成一段很长的背景介绍。</p>
+<p>但我现在更推荐一种更实用的写法：</p>
+<ul>
+<li>少讲大道理</li>
+<li>多写“触发后该怎么做”</li>
+</ul>
+<p>也就是说，正文最好偏流程，而不是散文。</p>
+<p>例如：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Ask what Redis key, business module, or status the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> If the user mentions Agent SDK, explain how Redis can be wrapped as a custom tool.</span><br><span class="line"><span class="bullet">4.</span> If the user wants a demo, provide a minimal runnable example.</span><br></pre></td></tr></table></figure>
+
+<p>这里你看到的这些 <code>step</code>，并不是什么必须的 schema 字段，它们只是正文里的一种好写法。</p>
+<p>它的意义是：</p>
+<ul>
+<li>帮 Claude 明白“触发后先做什么，再做什么”</li>
+<li>让 Skill 更像一份工作流程说明，而不是一段模糊说明</li>
+</ul>
+<p>所以如果你在别人的 Skill 里看到：</p>
+<ul>
+<li>Step 1</li>
+<li>Step 2</li>
+<li>Step 3</li>
+</ul>
+<p>不用把它想成“必须配置项”，它更像是一种非常推荐的正文写法。</p>
+<h2 id="一个-Skill-可以再包含哪些东西"><a href="#一个-Skill-可以再包含哪些东西" class="headerlink" title="一个 Skill 可以再包含哪些东西"></a>一个 Skill 可以再包含哪些东西</h2><p>当你的 Skill 不再只是最小版本时，通常还会加入一些可选目录。</p>
+<p>比较常见的是：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">├── SKILL.md</span><br><span class="line">├── scripts/</span><br><span class="line">├── references/</span><br><span class="line">└── assets/</span><br></pre></td></tr></table></figure>
+
+<p>它们分别解决不同问题。</p>
+<h3 id="scripts"><a href="#scripts" class="headerlink" title="scripts/"></a><code>scripts/</code></h3><p>适合放可执行脚本。</p>
+<p>什么时候该加：</p>
+<ul>
+<li>这件事总是反复做</li>
+<li>你不想每次都让 Claude 重新生成同样的脚本</li>
+<li>你希望结果更稳定</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>查询某个 API 的脚本</li>
+<li>批量处理文件的脚本</li>
+<li>固定格式转换脚本</li>
+</ul>
+<h3 id="references"><a href="#references" class="headerlink" title="references/"></a><code>references/</code></h3><p>适合放参考资料。</p>
+<p>什么时候该加：</p>
+<ul>
+<li>有一些内容很重要，但不适合全塞进 <code>SKILL.md</code></li>
+<li>你希望 Claude 按需读取，而不是每次都把全文塞进上下文</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>数据库 schema</li>
+<li>API 文档</li>
+<li>公司内部规则</li>
+<li>某个业务模块的详细说明</li>
+</ul>
+<h3 id="assets"><a href="#assets" class="headerlink" title="assets/"></a><code>assets/</code></h3><p>适合放资源文件。</p>
+<p>例如：</p>
+<ul>
+<li>模板</li>
+<li>图标</li>
+<li>示例文件</li>
+<li>前端样板代码</li>
+</ul>
+<h2 id="一个很推荐的创建顺序"><a href="#一个很推荐的创建顺序" class="headerlink" title="一个很推荐的创建顺序"></a>一个很推荐的创建顺序</h2><p>如果你现在准备从零创建一个 Skill，我会建议按下面这个顺序来。</p>
+<h3 id="第一步：先想清楚用户会怎么问"><a href="#第一步：先想清楚用户会怎么问" class="headerlink" title="第一步：先想清楚用户会怎么问"></a>第一步：先想清楚用户会怎么问</h3><p>这是最重要的一步。</p>
+<p>不要先写目录，不要先写代码，先想：</p>
+<ul>
+<li>用户会怎么描述这个需求？</li>
+<li>哪些提问应该命中这个 Skill？</li>
+<li>命中之后，Claude 应该先做什么？</li>
+</ul>
+<p>如果这一步不清楚，后面 <code>description</code> 就很容易写得很空。</p>
+<h3 id="第二步：先写最小版-SKILL-md"><a href="#第二步：先写最小版-SKILL-md" class="headerlink" title="第二步：先写最小版 SKILL.md"></a>第二步：先写最小版 <code>SKILL.md</code></h3><p>先不要急着上 <code>scripts/</code>、<code>references/</code>、<code>assets/</code>。</p>
+<p>先把最小版写出来：</p>
+<ul>
+<li><code>name</code></li>
+<li><code>description</code></li>
+<li>一段清晰的正文流程</li>
+</ul>
+<p>只要这个最小版能讲清楚触发条件和处理流程，就已经比很多“又大又空”的 Skill 强了。</p>
+<h3 id="第三步：再决定要不要拆资源"><a href="#第三步：再决定要不要拆资源" class="headerlink" title="第三步：再决定要不要拆资源"></a>第三步：再决定要不要拆资源</h3><p>当你发现正文越来越长时，再考虑拆出去：</p>
+<ul>
+<li>可执行逻辑放 <code>scripts/</code></li>
+<li>参考资料放 <code>references/</code></li>
+<li>模板资源放 <code>assets/</code></li>
+</ul>
+<p>这一步的关键不是“目录越完整越专业”，而是：</p>
+<p><strong>让 <code>SKILL.md</code> 保持精炼。</strong></p>
+<h2 id="一个完整但仍然简单的示例"><a href="#一个完整但仍然简单的示例" class="headerlink" title="一个完整但仍然简单的示例"></a>一个完整但仍然简单的示例</h2><p>假设你要做一个 Skill，帮助 Claude 在 Agent SDK 场景下处理 Redis 状态查询。</p>
+<p>目录可以长这样：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">redis-status-helper/</span><br><span class="line">├── SKILL.md</span><br><span class="line">└── references/</span><br><span class="line">    └── redis-key-patterns.md</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>SKILL.md</code> 可以写成：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or wrap Redis access as a Claude Agent SDK custom tool.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify whether the user wants read-only inspection or write operations.</span><br><span class="line"><span class="bullet">2.</span> If the user asks about Agent SDK, explain how Redis can be wrapped with tool() and createSdkMcpServer().</span><br><span class="line"><span class="bullet">3.</span> If key patterns are needed, read references/redis-key-patterns.md.</span><br><span class="line"><span class="bullet">4.</span> Prefer concrete examples over abstract explanation.</span><br></pre></td></tr></table></figure>
+
+<p>这已经是一份很像样的 Skill 了。</p>
+<p>它不复杂，但已经具备几个关键点：</p>
+<ul>
+<li>触发条件明确</li>
+<li>处理流程明确</li>
+<li>参考资料入口明确</li>
+</ul>
+<h2 id="写-Skill-时，我觉得最容易踩的坑"><a href="#写-Skill-时，我觉得最容易踩的坑" class="headerlink" title="写 Skill 时，我觉得最容易踩的坑"></a>写 Skill 时，我觉得最容易踩的坑</h2><h3 id="1-description-写得太空"><a href="#1-description-写得太空" class="headerlink" title="1. description 写得太空"></a>1. <code>description</code> 写得太空</h3><p>这是第一大坑。</p>
+<p>如果 <code>description</code> 不具体，Skill 触发效果通常就不会太好。</p>
+<h3 id="2-正文全是背景，没有流程"><a href="#2-正文全是背景，没有流程" class="headerlink" title="2. 正文全是背景，没有流程"></a>2. 正文全是背景，没有流程</h3><p>Skill 正文不是写“这个主题有多重要”，而是写“被触发后 Claude 应该怎么做”。</p>
+<h3 id="3-什么都塞进-SKILL-md"><a href="#3-什么都塞进-SKILL-md" class="headerlink" title="3. 什么都塞进 SKILL.md"></a>3. 什么都塞进 <code>SKILL.md</code></h3><p>如果 schema、API 文档、示例、脚本全塞进去，正文会越来越胖，后面也不容易维护。</p>
+<h3 id="4-一上来就想做很大"><a href="#4-一上来就想做很大" class="headerlink" title="4. 一上来就想做很大"></a>4. 一上来就想做很大</h3><p>我会非常建议第一次先做最小版。</p>
+<p>真的能触发、能工作，再慢慢加 <code>references/</code>、<code>scripts/</code>。</p>
+<h2 id="用一句话总结-Skill-的创建逻辑"><a href="#用一句话总结-Skill-的创建逻辑" class="headerlink" title="用一句话总结 Skill 的创建逻辑"></a>用一句话总结 Skill 的创建逻辑</h2><p>如果让我把整件事压成一句话，我会这样说：</p>
+<p><strong>先用 <code>name + description</code> 定义“什么时候触发”，再用 <code>SKILL.md</code> 正文定义“触发后怎么做”，复杂资料再拆到 <code>references/</code>、<code>scripts/</code>、<code>assets/</code>。</strong></p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>第一次创建 Skill，其实不用把它想得太重。</p>
+<p>你不需要一开始就做一个很完整的大仓库，也不需要一开始就准备特别复杂的目录。</p>
+<p>更实用的做法反而是：</p>
+<ul>
+<li>先想清楚它要解决什么问题</li>
+<li>先写一个最小可用的 <code>SKILL.md</code></li>
+<li>先把触发和流程写准</li>
+<li>再根据真实使用慢慢迭代</li>
+</ul>
+<p>我觉得这才是最适合真正上手的节奏。</p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>AI</tag>
+        <tag>Skill</tag>
+      </tags>
+  </entry>
 </search>

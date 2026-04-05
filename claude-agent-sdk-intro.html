@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"charles0719.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night-bright"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="最近在系统整理 Claude Agent SDK。刚开始接触这套东西时，我最大的感受不是“代码很难”，而是“概念很容易缠在一起”。 很多文章会同时出现这些词：  query() session custom tools MCP server agent skill  第一次读的时候，如果没有顺序，很容易一篇看完只记住了名词，没有真正形成心智模型。 所以这篇文章我不讲 Skill，不讲插件市场，也不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP &#x2F; tools &#x2F; agent">
+<meta property="og:url" content="https://charles0719.github.io/claude-agent-sdk-intro.html">
+<meta property="og:site_name" content="Charles&#39;s Blog">
+<meta property="og:description" content="最近在系统整理 Claude Agent SDK。刚开始接触这套东西时，我最大的感受不是“代码很难”，而是“概念很容易缠在一起”。 很多文章会同时出现这些词：  query() session custom tools MCP server agent skill  第一次读的时候，如果没有顺序，很容易一篇看完只记住了名词，没有真正形成心智模型。 所以这篇文章我不讲 Skill，不讲插件市场，也不">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-04-05T14:40:00.000Z">
+<meta property="article:modified_time" content="2026-04-05T15:29:24.846Z">
+<meta property="article:author" content="Charles Ruan">
+<meta property="article:tag" content="Claude Code">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Claude Agent SDK">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://charles0719.github.io/claude-agent-sdk-intro.html">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://charles0719.github.io/claude-agent-sdk-intro.html","path":"claude-agent-sdk-intro.html","title":"Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP / tools / agent"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP / tools / agent | Charles's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Charles's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Charles's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BB%80%E4%B9%88%E6%98%AF-Claude-Agent-SDK"><span class="nav-number">1.</span> <span class="nav-text">1. 什么是 Claude Agent SDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%BA%94%E8%AF%A5%E7%94%A8%E5%AE%83"><span class="nav-number">2.</span> <span class="nav-text">2. 什么时候应该用它</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%9C%80%E5%B0%8F-query-%E8%B0%83%E7%94%A8%E6%80%8E%E4%B9%88%E8%B7%91"><span class="nav-number">3.</span> <span class="nav-text">3. 最小 query() 调用怎么跑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#options-%E9%87%8C%E6%9C%80%E5%85%88%E8%AF%A5%E7%9C%8B%E6%87%82%E7%9A%84%E5%87%A0%E4%B8%AA%E5%8F%82%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">options 里最先该看懂的几个参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#cwd"><span class="nav-number">3.1.1.</span> <span class="nav-text">cwd</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#permissionMode"><span class="nav-number">3.1.2.</span> <span class="nav-text">permissionMode</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#maxTurns"><span class="nav-number">3.1.3.</span> <span class="nav-text">maxTurns</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#model"><span class="nav-number">3.1.4.</span> <span class="nav-text">model</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AA-demo-%E5%BA%94%E8%AF%A5%E9%87%8D%E7%82%B9%E8%A7%82%E5%AF%9F%E4%BB%80%E4%B9%88"><span class="nav-number">3.2.</span> <span class="nav-text">第一个 demo 应该重点观察什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-session-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">4.</span> <span class="nav-text">4. session 是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#session-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">4.1.</span> <span class="nav-text">session 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AE%83%E5%80%BC%E5%BE%97%E5%85%A5%E9%97%A8%E9%98%B6%E6%AE%B5%E5%B0%B1%E6%8E%8C%E6%8F%A1"><span class="nav-number">4.2.</span> <span class="nav-text">为什么它值得入门阶段就掌握</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Claude-Agent-SDK-%E9%87%8C%E5%B8%B8%E8%A7%81%E7%9A%84-session-%E8%83%BD%E5%8A%9B"><span class="nav-number">4.3.</span> <span class="nav-text">Claude Agent SDK 里常见的 session 能力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%9C%80%E5%B0%8F-session-demo"><span class="nav-number">4.4.</span> <span class="nav-text">一个最小 session demo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%8D%E8%BF%9B%E4%B8%80%E6%AD%A5%EF%BC%9A%E6%9F%A5%E7%9C%8B%E5%8E%86%E5%8F%B2-session"><span class="nav-number">4.5.</span> <span class="nav-text">再进一步：查看历史 session</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E6%9B%B4%E9%80%82%E5%90%88%E8%AF%BB%E8%80%85%E7%90%86%E8%A7%A3%E7%9A%84-demo-%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F"><span class="nav-number">4.6.</span> <span class="nav-text">一个更适合读者理解的 demo 组织方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%A6%82%E4%BD%95%E6%89%A9%E5%B1%95%E5%87%BA-MCP-server%E3%80%81custom-tools-%E5%92%8C-agent"><span class="nav-number">5.</span> <span class="nav-text">5. 如何扩展出 MCP server、custom tools 和 agent</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-custom-tools-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 custom tools 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-MCP-server-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 MCP server 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-createSdkMcpServer-%E5%88%B0%E5%BA%95%E5%9C%A8%E5%81%9A%E4%BB%80%E4%B9%88"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 createSdkMcpServer() 到底在做什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-agent-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">5.4.</span> <span class="nav-text">5.4 agent 是什么</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E5%BC%A0%E8%A1%A8%E8%AE%B0%E4%BD%8F%E8%BF%99%E4%B8%80%E5%B1%82%E5%85%B3%E7%B3%BB"><span class="nav-number">5.5.</span> <span class="nav-text">一张表记住这一层关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">6.</span> <span class="nav-text">结语</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Charles Ruan"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Charles Ruan</p>
+  <div class="site-description" itemprop="description">用于写一些心得,学习内容,知识分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/charles0719" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;charles0719" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:17625904731@163.com" title="E-Mail → mailto:17625904731@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://charles0719.github.io/claude-agent-sdk-intro.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charles Ruan">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Charles's Blog">
+      <meta itemprop="description" content="用于写一些心得,学习内容,知识分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP &#x2F; tools &#x2F; agent | Charles's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Claude Agent SDK 入门：是什么、什么时候用、query、session 与 MCP / tools / agent
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-04-05 22:40:00 / 修改时间：23:29:24" itemprop="dateCreated datePublished" datetime="2026-04-05T22:40:00+08:00">2026-04-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" itemprop="url" rel="index"><span itemprop="name">技术分享</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6.2k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>6 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>最近在系统整理 Claude Agent SDK。刚开始接触这套东西时，我最大的感受不是“代码很难”，而是“概念很容易缠在一起”。</p>
+<p>很多文章会同时出现这些词：</p>
+<ul>
+<li><code>query()</code></li>
+<li><code>session</code></li>
+<li><code>custom tools</code></li>
+<li><code>MCP server</code></li>
+<li><code>agent</code></li>
+<li><code>skill</code></li>
+</ul>
+<p>第一次读的时候，如果没有顺序，很容易一篇看完只记住了名词，没有真正形成心智模型。</p>
+<p>所以这篇文章我不讲 Skill，不讲插件市场，也不讲 <code>any-agent</code>。我们只把 Claude Agent SDK 本身这一层拉直，用 5 个块来建立基础认知：</p>
+<ol>
+<li>什么是 Claude Agent SDK</li>
+<li>什么时候应该用它</li>
+<li>最小 <code>query()</code> 调用怎么跑</li>
+<li><code>session</code> 是什么，以及怎么做一个最小 demo</li>
+<li>如何扩展出 <code>MCP server</code>、<code>custom tools</code> 和 <code>agent</code></li>
+</ol>
+<span id="more"></span>
+
+<h2 id="1-什么是-Claude-Agent-SDK"><a href="#1-什么是-Claude-Agent-SDK" class="headerlink" title="1. 什么是 Claude Agent SDK"></a>1. 什么是 Claude Agent SDK</h2><p>如果一句话概括：</p>
+<p><strong>Claude Agent SDK 是一个让模型不只是“回答一句话”，而是能够带着上下文、工具和角色去执行任务的运行框架。</strong></p>
+<p>普通模型调用通常更像：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">输入一段文本 -&gt; 返回一段文本</span><br></pre></td></tr></table></figure>
+
+<p>而 Claude Agent SDK 更像：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">给出一个任务 -&gt; Agent 在指定环境里运行 -&gt; 持续返回过程消息和最终结果</span><br></pre></td></tr></table></figure>
+
+<p>所以它和普通模型 API 最大的区别，不只是接口名字不一样，而是它多了一层“Agent 运行时”。</p>
+<p>这个运行时通常包含：</p>
+<ul>
+<li>上下文</li>
+<li>会话能力</li>
+<li>工具能力</li>
+<li>角色能力</li>
+<li>权限控制</li>
+<li>流式消息</li>
+</ul>
+<p>你可以把它简单理解成：</p>
+<ul>
+<li>普通模型 API 更像“问答接口”</li>
+<li>Agent SDK 更像“任务执行框架”</li>
+</ul>
+<h2 id="2-什么时候应该用它"><a href="#2-什么时候应该用它" class="headerlink" title="2. 什么时候应该用它"></a>2. 什么时候应该用它</h2><p>并不是所有场景都需要 Claude Agent SDK。</p>
+<p>如果你的需求只是：</p>
+<ul>
+<li>翻译</li>
+<li>润色</li>
+<li>单轮问答</li>
+<li>一次性总结</li>
+</ul>
+<p>那普通模型 API 往往已经足够。</p>
+<p>Claude Agent SDK 更适合这些场景：</p>
+<ul>
+<li>你希望模型能连续记住上下文</li>
+<li>你希望模型能调用你的工具</li>
+<li>你希望模型不是只聊天，而是真正“做事”</li>
+<li>你希望模型能分角色工作</li>
+<li>你希望对权限和行为边界做控制</li>
+</ul>
+<p>换句话说，只要你的需求开始出现下面这些表达，就可以开始考虑 Agent SDK：</p>
+<ul>
+<li>“帮我继续上一次分析”</li>
+<li>“帮我查一下系统状态”</li>
+<li>“帮我调用我自己的服务”</li>
+<li>“帮我根据真实数据给出结论”</li>
+<li>“帮我以研究员&#x2F;审查员&#x2F;运维助手的视角来处理”</li>
+</ul>
+<p>比如这些就很典型：</p>
+<ul>
+<li>让 Agent 查询 Redis 里的任务状态，并给出中文总结</li>
+<li>让 Agent 查数据库中的业务记录，再给出排查建议</li>
+<li>让 Agent 继续上一次的研究上下文，而不是每次重新开始</li>
+<li>让 Agent 以不同角色输出不同风格的结论</li>
+</ul>
+<h2 id="3-最小-query-调用怎么跑"><a href="#3-最小-query-调用怎么跑" class="headerlink" title="3. 最小 query() 调用怎么跑"></a>3. 最小 <code>query()</code> 调用怎么跑</h2><p>Claude Agent SDK 最核心的入口一般就是 <code>query()</code>。</p>
+<p>一个最小 demo 可以长这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; query &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请用中文解释 query() 是做什么的，限制在三句话内。&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">3</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> <span class="title function_">await</span> (<span class="keyword">const</span> message <span class="keyword">of</span> conversation) &#123;</span><br><span class="line">  <span class="keyword">if</span> (message.<span class="property">type</span> === <span class="string">&quot;assistant&quot;</span>) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> block <span class="keyword">of</span> message.<span class="property">message</span>.<span class="property">content</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (block.<span class="property">type</span> === <span class="string">&quot;text&quot;</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(block.<span class="property">text</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (message.<span class="property">type</span> === <span class="string">&quot;result&quot;</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(message.<span class="property">result</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里最重要的理解是：</p>
+<ul>
+<li><code>query()</code> 启动的是一次 Agent 任务</li>
+<li>返回值不是一个普通 Promise，而是一个消息流</li>
+<li>你会陆续收到初始化信息、assistant 消息、最终结果</li>
+</ul>
+<p>也就是说，它不是“我调一下，直接拿字符串”，而是“我启动一个过程，然后不断接收过程中的消息”。</p>
+<h3 id="options-里最先该看懂的几个参数"><a href="#options-里最先该看懂的几个参数" class="headerlink" title="options 里最先该看懂的几个参数"></a><code>options</code> 里最先该看懂的几个参数</h3><p>第一次写 demo 时，其实不需要把所有参数都记全。最先看懂下面几个就够了。</p>
+<h4 id="cwd"><a href="#cwd" class="headerlink" title="cwd"></a><code>cwd</code></h4><p>告诉 Agent 当前任务运行在什么目录上下文里。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">cwd</span>: process.<span class="title function_">cwd</span>()</span><br></pre></td></tr></table></figure>
+
+<h4 id="permissionMode"><a href="#permissionMode" class="headerlink" title="permissionMode"></a><code>permissionMode</code></h4><p>决定 Agent 的权限模式。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>入门 demo 里这个模式很适合，因为它更保守，更偏“先规划，再执行”。</p>
+<h4 id="maxTurns"><a href="#maxTurns" class="headerlink" title="maxTurns"></a><code>maxTurns</code></h4><p>限制这次任务最多跑几轮。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">maxTurns</span>: <span class="number">3</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="model"><a href="#model" class="headerlink" title="model"></a><code>model</code></h4><p>如果你有自己的模型路由，也可以显式指定。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">model</span>: <span class="string">&quot;your-model-name&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="第一个-demo-应该重点观察什么"><a href="#第一个-demo-应该重点观察什么" class="headerlink" title="第一个 demo 应该重点观察什么"></a>第一个 demo 应该重点观察什么</h3><p>我建议第一次跑 <code>query()</code> 时，至少确认这几件事：</p>
+<ol>
+<li>有没有正常启动</li>
+<li>有没有输出 assistant 消息</li>
+<li>有没有最终 <code>result</code></li>
+<li>当前模型是不是你预期的那个</li>
+</ol>
+<p>只要这几件事打通，你就已经真正把 Claude Agent SDK 跑起来了。</p>
+<h2 id="4-session-是什么"><a href="#4-session-是什么" class="headerlink" title="4. session 是什么"></a>4. <code>session</code> 是什么</h2><p>如果说 <code>query()</code> 让你第一次把 Claude Agent SDK 跑起来，那么 <code>session</code> 才是让你真正感觉“它不是普通单轮问答”的地方。</p>
+<h3 id="session-是什么"><a href="#session-是什么" class="headerlink" title="session 是什么"></a><code>session</code> 是什么</h3><p>一句话解释：</p>
+<p><strong>session 是 Claude Agent SDK 用来保存和延续任务上下文的能力。</strong></p>
+<p>没有 session 时，更像：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">问一个问题 -&gt; 回一个答案 -&gt; 结束</span><br></pre></td></tr></table></figure>
+
+<p>有了 session 之后，更像：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">第一轮建立背景 -&gt; 第二轮继续追问 -&gt; 第三轮接着往下做</span><br></pre></td></tr></table></figure>
+
+<p>所以 session 最核心的价值，不是“多了一个技术名词”，而是：</p>
+<p><strong>让 Agent 可以持续在同一个任务上下文里工作。</strong></p>
+<h3 id="为什么它值得入门阶段就掌握"><a href="#为什么它值得入门阶段就掌握" class="headerlink" title="为什么它值得入门阶段就掌握"></a>为什么它值得入门阶段就掌握</h3><p>很多真实任务天生就是多轮的：</p>
+<ul>
+<li>研究一个项目</li>
+<li>排查一个问题</li>
+<li>写一个方案</li>
+<li>跟着一个分析过程不断补充条件</li>
+</ul>
+<p>如果每次都从零开始，模型虽然也能回答，但体验会非常碎。</p>
+<p>session 解决的就是这个问题。</p>
+<h3 id="Claude-Agent-SDK-里常见的-session-能力"><a href="#Claude-Agent-SDK-里常见的-session-能力" class="headerlink" title="Claude Agent SDK 里常见的 session 能力"></a>Claude Agent SDK 里常见的 session 能力</h3><p>最常见的几类动作包括：</p>
+<ul>
+<li><code>continue</code><br>继续当前目录下最近一次会话</li>
+<li><code>resume</code><br>恢复指定 session</li>
+<li><code>listSessions()</code><br>列出历史 session</li>
+<li><code>getSessionMessages()</code><br>查看某个 session 的消息记录</li>
+</ul>
+<h3 id="一个最小-session-demo"><a href="#一个最小-session-demo" class="headerlink" title="一个最小 session demo"></a>一个最小 session demo</h3><p>第一步，先创建一个会话，让 Agent 记住背景：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请记住：我的研究主题是 Agent SDK，我重点关注 session、tools 和 agent。然后用中文确认你记住了什么。&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">2</span>,</span><br><span class="line">    <span class="attr">persistSession</span>: <span class="literal">true</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>第二步，在下一次调用里继续最近的会话：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;我们刚才重点关注的 3 个主题分别是什么？&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">cwd</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">    <span class="attr">continue</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">permissionMode</span>: <span class="string">&quot;plan&quot;</span>,</span><br><span class="line">    <span class="attr">maxTurns</span>: <span class="number">2</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里最关键的参数就是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">continue</span>: <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<p>它的意思不是“继续一段普通聊天”，而是：</p>
+<p><strong>继续当前目录下最近一次 Agent 会话。</strong></p>
+<h3 id="再进一步：查看历史-session"><a href="#再进一步：查看历史-session" class="headerlink" title="再进一步：查看历史 session"></a>再进一步：查看历史 session</h3><p>如果只会继续，还不够。</p>
+<p>很多时候你还会想知道：</p>
+<ul>
+<li>当前目录下到底有哪些 session</li>
+<li>最近一次 session 的 ID 是什么</li>
+<li>某个 session 里都发生了什么</li>
+</ul>
+<p>这时候就会用到：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; listSessions, getSessionMessages &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> sessions = <span class="keyword">await</span> <span class="title function_">listSessions</span>(&#123;</span><br><span class="line">  <span class="attr">dir</span>: process.<span class="title function_">cwd</span>(),</span><br><span class="line">  <span class="attr">limit</span>: <span class="number">10</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> messages = <span class="keyword">await</span> <span class="title function_">getSessionMessages</span>(sessionId, &#123; <span class="attr">limit</span>: <span class="number">8</span> &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这类能力特别适合：</p>
+<ul>
+<li>做调试</li>
+<li>做研究记录</li>
+<li>做多轮任务回放</li>
+</ul>
+<h3 id="一个更适合读者理解的-demo-组织方式"><a href="#一个更适合读者理解的-demo-组织方式" class="headerlink" title="一个更适合读者理解的 demo 组织方式"></a>一个更适合读者理解的 demo 组织方式</h3><p>如果你自己写 demo，我会很建议做成这种命令风格：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">npm run session:start</span><br><span class="line">npm run session:<span class="built_in">continue</span></span><br><span class="line">npm run session:list</span><br><span class="line">npm run session:inspect</span><br></pre></td></tr></table></figure>
+
+<p>这样好处很明显：</p>
+<ul>
+<li>概念和动作是一一对应的</li>
+<li>读者看起来不抽象</li>
+<li>每个动作都能单独验证</li>
+</ul>
+<h2 id="5-如何扩展出-MCP-server、custom-tools-和-agent"><a href="#5-如何扩展出-MCP-server、custom-tools-和-agent" class="headerlink" title="5. 如何扩展出 MCP server、custom tools 和 agent"></a>5. 如何扩展出 <code>MCP server</code>、<code>custom tools</code> 和 <code>agent</code></h2><p>当你已经理解：</p>
+<ul>
+<li><code>query()</code> 是任务入口</li>
+<li><code>session</code> 是连续上下文能力</li>
+</ul>
+<p>下一步最值得进入的，就是工具和角色这一层。</p>
+<h3 id="5-1-custom-tools-是什么"><a href="#5-1-custom-tools-是什么" class="headerlink" title="5.1 custom tools 是什么"></a>5.1 <code>custom tools</code> 是什么</h3><p>最直接的理解就是：</p>
+<p><strong>把你自己的能力暴露给 Agent 调用。</strong></p>
+<p>这个能力可以是：</p>
+<ul>
+<li>查数据库</li>
+<li>查 Redis</li>
+<li>调 HTTP API</li>
+<li>调内部服务</li>
+<li>查日志</li>
+<li>改任务状态</li>
+</ul>
+<p>所以 custom tool 本质上不等于“数据库工具”。数据库只是其中一种使用场景。</p>
+<p>一个最小例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; tool &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; z &#125; <span class="keyword">from</span> <span class="string">&quot;zod/v4&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> searchUsers = <span class="title function_">tool</span>(</span><br><span class="line">  <span class="string">&quot;search-users&quot;</span>,</span><br><span class="line">  <span class="string">&quot;Search users by keyword&quot;</span>,</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">keyword</span>: z.<span class="title function_">string</span>()</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="title function_">async</span> (&#123; keyword &#125;) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> users = [</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">name</span>: <span class="string">&quot;Zhang San&quot;</span> &#125;,</span><br><span class="line">      &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">name</span>: <span class="string">&quot;Alice Wang&quot;</span> &#125;</span><br><span class="line">    ];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> matches = users.<span class="title function_">filter</span>(<span class="function">(<span class="params">user</span>) =&gt;</span> user.<span class="property">name</span>.<span class="title function_">includes</span>(keyword));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      <span class="attr">content</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="attr">type</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">          <span class="attr">text</span>: <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(matches, <span class="literal">null</span>, <span class="number">2</span>)</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>这里查的是内存数组。</p>
+<p>但如果把内部逻辑换成：</p>
+<ul>
+<li>查 MySQL</li>
+<li>查 PostgreSQL</li>
+<li>查 Redis</li>
+</ul>
+<p>那它就能变成真实业务能力。</p>
+<h3 id="5-2-MCP-server-是什么"><a href="#5-2-MCP-server-是什么" class="headerlink" title="5.2 MCP server 是什么"></a>5.2 <code>MCP server</code> 是什么</h3><p><code>MCP</code> 是 <code>Model Context Protocol</code>。</p>
+<p>可以把它理解成：</p>
+<p><strong>给模型提供工具的一套标准接口。</strong></p>
+<p>而 <code>MCP server</code> 就是按这套协议，把一组工具暴露给模型调用的服务层。</p>
+<p>所以：</p>
+<ul>
+<li>它不只是浏览器、Postman 这种大工具才会有</li>
+<li>你自己定义的一组业务 tool，也完全可以组成一个 MCP server</li>
+</ul>
+<p>比如：</p>
+<ul>
+<li>Redis 任务状态查询 MCP server</li>
+<li>订单查询 MCP server</li>
+<li>日志检索 MCP server</li>
+</ul>
+<h3 id="5-3-createSdkMcpServer-到底在做什么"><a href="#5-3-createSdkMcpServer-到底在做什么" class="headerlink" title="5.3 createSdkMcpServer() 到底在做什么"></a>5.3 <code>createSdkMcpServer()</code> 到底在做什么</h3><p>在 Claude Agent SDK 里，<code>createSdkMcpServer()</code> 是一个非常关键的辅助方法。</p>
+<p>它干的事情可以用一句话概括：</p>
+<p><strong>把你定义好的 tools 封装成一个进程内 MCP server，并在当前会话里注册给 Agent 使用。</strong></p>
+<p>例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createSdkMcpServer, query, tool &#125; <span class="keyword">from</span> <span class="string">&quot;@anthropic-ai/claude-agent-sdk&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> searchUsers = <span class="title function_">tool</span>(...);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> server = <span class="title function_">createSdkMcpServer</span>(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&quot;demo-tools&quot;</span>,</span><br><span class="line">  <span class="attr">tools</span>: [searchUsers]</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;请查询用户&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">mcpServers</span>: &#123;</span><br><span class="line">      <span class="string">&quot;demo-tools&quot;</span>: server</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里可以记成三步：</p>
+<ol>
+<li>用 <code>tool()</code> 定义能力</li>
+<li>用 <code>createSdkMcpServer()</code> 把能力装进一个 MCP server</li>
+<li>用 <code>mcpServers</code> 把它注册给当前 <code>query()</code></li>
+</ol>
+<h3 id="5-4-agent-是什么"><a href="#5-4-agent-是什么" class="headerlink" title="5.4 agent 是什么"></a>5.4 <code>agent</code> 是什么</h3><p><code>agent</code> 更像“角色配置”。</p>
+<p>比如你可以定义：</p>
+<ul>
+<li><code>researcher</code></li>
+<li><code>reviewer</code></li>
+<li><code>ops-assistant</code></li>
+</ul>
+<p>不同角色可以有不同的：</p>
+<ul>
+<li>prompt</li>
+<li>工具</li>
+<li>模型</li>
+<li>最大轮次</li>
+</ul>
+<p>一个最小例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> conversation = <span class="title function_">query</span>(&#123;</span><br><span class="line">  <span class="attr">prompt</span>: <span class="string">&quot;帮我分析一个项目的研究重点&quot;</span>,</span><br><span class="line">  <span class="attr">options</span>: &#123;</span><br><span class="line">    <span class="attr">agent</span>: <span class="string">&quot;researcher&quot;</span>,</span><br><span class="line">    <span class="attr">agents</span>: &#123;</span><br><span class="line">      <span class="attr">researcher</span>: &#123;</span><br><span class="line">        <span class="attr">description</span>: <span class="string">&quot;Research-oriented assistant&quot;</span>,</span><br><span class="line">        <span class="attr">prompt</span>: <span class="string">&quot;Explain clearly and stay concise.&quot;</span>,</span><br><span class="line">        <span class="attr">tools</span>: []</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这里要注意：</p>
+<ul>
+<li><code>agents</code> 用来定义有哪些角色</li>
+<li><code>agent</code> 用来指定本次任务用哪个角色</li>
+</ul>
+<h3 id="一张表记住这一层关系"><a href="#一张表记住这一层关系" class="headerlink" title="一张表记住这一层关系"></a>一张表记住这一层关系</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>它是什么</th>
+<th>它解决什么问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>query()</code></td>
+<td>Agent 任务入口</td>
+<td>启动一次任务并接收消息流</td>
+</tr>
+<tr>
+<td><code>session</code></td>
+<td>连续上下文能力</td>
+<td>让 Agent 可以继续同一个任务，而不是每轮从零开始</td>
+</tr>
+<tr>
+<td><code>custom tool</code></td>
+<td>具体能力</td>
+<td>让 Agent 能查数据、调系统、改状态</td>
+</tr>
+<tr>
+<td><code>MCP server</code></td>
+<td>工具组织方式</td>
+<td>把一组能力按统一协议暴露给 Agent</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>角色配置</td>
+<td>让不同任务有不同风格和边界</td>
+</tr>
+</tbody></table>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>如果你第一次接触 Claude Agent SDK，我会很建议先按这 5 块来建立基础心智模型：</p>
+<ol>
+<li>它是什么</li>
+<li>什么时候用</li>
+<li><code>query()</code> 怎么跑</li>
+<li><code>session</code> 怎么理解和验证</li>
+<li><code>MCP server</code>、<code>custom tools</code>、<code>agent</code> 分别是什么</li>
+</ol>
+<p>只要这 5 块打稳了，后面你再去看：</p>
+<ul>
+<li>Skill</li>
+<li>插件市场</li>
+<li>第三方方法仓库</li>
+</ul>
+<p>就会顺很多，也不会再把所有概念混在一起。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Claude-Code/" rel="tag"># Claude Code</a>
+              <a href="/tags/AI/" rel="tag"># AI</a>
+              <a href="/tags/Claude-Agent-SDK/" rel="tag"># Claude Agent SDK</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/raven-agent-resume-pdf.html" rel="prev" title="用 Claude Code 一句话把 Markdown 简历转成 PDF">
+                  <i class="fa fa-angle-left"></i> 用 Claude Code 一句话把 Markdown 简历转成 PDF
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/any-agent-guide.html" rel="next" title="any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么">
+                  any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Charles Ruan</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">18k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">17 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
