@@ -20,15 +20,15 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"charles0719.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night-bright"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="这篇文章只讲一件事： 把 any-agent 装到本地之后，Claude Code 到底能帮我们多做什么。 我会重点回答下面这些更实际的问题：  装完 Skill 之后，平时到底怎么用 有了 Skill 和没有 Skill，差别到底在哪 我怎么通过自然语言或指令，更好地命中这些 Skill custom-tools、sessions、advanced 这些 Skill，对使用者分别带来什么帮助">
+    <meta name="description" content="最近在 GitHub 上看到一个项目：any-agent。 因为我自己本身就对 Claude Code、Agent、Skill 这些方向比较感兴趣，所以看到这种项目时，通常都会顺手往下看一看。 看完之后我觉得，any-agent 挺适合单独拿出来聊一篇。它不是那种传统意义上“启动起来就能看到页面”的应用，而是一组围绕 Claude Code 使用体验做增强的 Skill 集合。 更具体一点说，我会">
 <meta property="og:type" content="article">
-<meta property="og:title" content="any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么">
+<meta property="og:title" content="分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合">
 <meta property="og:url" content="https://charles0719.github.io/any-agent-guide.html">
 <meta property="og:site_name" content="Charles&#39;s Blog">
-<meta property="og:description" content="这篇文章只讲一件事： 把 any-agent 装到本地之后，Claude Code 到底能帮我们多做什么。 我会重点回答下面这些更实际的问题：  装完 Skill 之后，平时到底怎么用 有了 Skill 和没有 Skill，差别到底在哪 我怎么通过自然语言或指令，更好地命中这些 Skill custom-tools、sessions、advanced 这些 Skill，对使用者分别带来什么帮助">
+<meta property="og:description" content="最近在 GitHub 上看到一个项目：any-agent。 因为我自己本身就对 Claude Code、Agent、Skill 这些方向比较感兴趣，所以看到这种项目时，通常都会顺手往下看一看。 看完之后我觉得，any-agent 挺适合单独拿出来聊一篇。它不是那种传统意义上“启动起来就能看到页面”的应用，而是一组围绕 Claude Code 使用体验做增强的 Skill 集合。 更具体一点说，我会">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-04-05T15:35:00.000Z">
-<meta property="article:modified_time" content="2026-04-05T15:43:23.191Z">
+<meta property="article:modified_time" content="2026-04-05T16:09:46.460Z">
 <meta property="article:author" content="Charles Ruan">
 <meta property="article:tag" content="Claude Code">
 <meta property="article:tag" content="any-agent">
@@ -39,10 +39,10 @@
 <link rel="canonical" href="https://charles0719.github.io/any-agent-guide.html">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://charles0719.github.io/any-agent-guide.html","path":"any-agent-guide.html","title":"any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么"}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://charles0719.github.io/any-agent-guide.html","path":"any-agent-guide.html","title":"分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么 | Charles's Blog</title>
+<title>分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合 | Charles's Blog</title>
   
 
 
@@ -236,12 +236,12 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么 | Charles's Blog">
+      <meta itemprop="name" content="分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合 | Charles's Blog">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么
+          分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合
         </h1>
 
         <div class="post-meta-container">
@@ -251,9 +251,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-04-05 23:35:00 / 修改时间：23:43:23" itemprop="dateCreated datePublished" datetime="2026-04-05T23:35:00+08:00">2026-04-05</time>
+      <time title="创建时间：2026-04-05 23:35:00" itemprop="dateCreated datePublished" datetime="2026-04-05T23:35:00+08:00">2026-04-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-04-06 00:09:46" itemprop="dateModified" datetime="2026-04-06T00:09:46+08:00">2026-04-06</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -272,14 +278,14 @@
         <i class="far fa-file-word"></i>
       </span>
       <span class="post-meta-item-text">本文字数：</span>
-      <span>3.7k</span>
+      <span>3.9k</span>
     </span>
     <span class="post-meta-item" title="阅读时长">
       <span class="post-meta-item-icon">
         <i class="far fa-clock"></i>
       </span>
       <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>3 分钟</span>
+      <span>4 分钟</span>
     </span>
 </div>
 
@@ -289,16 +295,19 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><p>这篇文章只讲一件事：</p>
-<p><strong>把 <code>any-agent</code> 装到本地之后，Claude Code 到底能帮我们多做什么。</strong></p>
-<p>我会重点回答下面这些更实际的问题：</p>
+    <div class="post-body" itemprop="articleBody"><p>最近在 GitHub 上看到一个项目：<a href="https://github.com/yuebanhome/any-agent"><code>any-agent</code></a>。</p>
+<p>因为我自己本身就对 Claude Code、Agent、Skill 这些方向比较感兴趣，所以看到这种项目时，通常都会顺手往下看一看。</p>
+<p>看完之后我觉得，<code>any-agent</code> 挺适合单独拿出来聊一篇。它不是那种传统意义上“启动起来就能看到页面”的应用，而是一组围绕 Claude Code 使用体验做增强的 Skill 集合。</p>
+<p>更具体一点说，我会把它理解成：</p>
+<p><strong>一个帮助你更好使用 Claude Code 的项目。</strong></p>
+<p>它的主要价值不是替你直接执行业务，而是把一些和 Agent SDK、session、custom tools、插件市场相关的知识和方法组织成更容易命中的 Skill，让 Claude 在这些主题下答得更准、更稳。</p>
+<p>所以这篇文章我想重点讲清楚：</p>
 <ul>
-<li>装完 Skill 之后，平时到底怎么用</li>
-<li>有了 Skill 和没有 Skill，差别到底在哪</li>
-<li>我怎么通过自然语言或指令，更好地命中这些 Skill</li>
-<li><code>custom-tools</code>、<code>sessions</code>、<code>advanced</code> 这些 Skill，对使用者分别带来什么帮助</li>
+<li><code>any-agent</code> 主要提供了哪些能力</li>
+<li>这些 Skill 对使用者到底有什么帮助</li>
+<li>装到本地之后，平时应该怎么用</li>
+<li>为什么它对经常研究 Claude Code 的人有价值</li>
 </ul>
-<p>所以这篇文章不会再去重复 README 里的项目说明，而是直接站在<strong>使用者视角</strong>，讲清楚这些 Skill 对日常使用到底有什么价值。</p>
 <span id="more"></span>
 
 <h2 id="先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”"><a href="#先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”" class="headerlink" title="先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”"></a>先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”</h2><p>这是我研究下来最重要的体感。</p>

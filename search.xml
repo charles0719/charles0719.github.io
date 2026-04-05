@@ -308,18 +308,21 @@
       </tags>
   </entry>
   <entry>
-    <title>any-agent 真正怎么用：装完 Skill 之后，Claude Code 能帮你多做什么</title>
+    <title>分享一个有意思的项目 any-agent：一组帮助更好使用 Claude Code 的 Skill 集合</title>
     <url>/any-agent-guide.html</url>
-    <content><![CDATA[<p>这篇文章只讲一件事：</p>
-<p><strong>把 <code>any-agent</code> 装到本地之后，Claude Code 到底能帮我们多做什么。</strong></p>
-<p>我会重点回答下面这些更实际的问题：</p>
+    <content><![CDATA[<p>最近在 GitHub 上看到一个项目：<a href="https://github.com/yuebanhome/any-agent"><code>any-agent</code></a>。</p>
+<p>因为我自己本身就对 Claude Code、Agent、Skill 这些方向比较感兴趣，所以看到这种项目时，通常都会顺手往下看一看。</p>
+<p>看完之后我觉得，<code>any-agent</code> 挺适合单独拿出来聊一篇。它不是那种传统意义上“启动起来就能看到页面”的应用，而是一组围绕 Claude Code 使用体验做增强的 Skill 集合。</p>
+<p>更具体一点说，我会把它理解成：</p>
+<p><strong>一个帮助你更好使用 Claude Code 的项目。</strong></p>
+<p>它的主要价值不是替你直接执行业务，而是把一些和 Agent SDK、session、custom tools、插件市场相关的知识和方法组织成更容易命中的 Skill，让 Claude 在这些主题下答得更准、更稳。</p>
+<p>所以这篇文章我想重点讲清楚：</p>
 <ul>
-<li>装完 Skill 之后，平时到底怎么用</li>
-<li>有了 Skill 和没有 Skill，差别到底在哪</li>
-<li>我怎么通过自然语言或指令，更好地命中这些 Skill</li>
-<li><code>custom-tools</code>、<code>sessions</code>、<code>advanced</code> 这些 Skill，对使用者分别带来什么帮助</li>
+<li><code>any-agent</code> 主要提供了哪些能力</li>
+<li>这些 Skill 对使用者到底有什么帮助</li>
+<li>装到本地之后，平时应该怎么用</li>
+<li>为什么它对经常研究 Claude Code 的人有价值</li>
 </ul>
-<p>所以这篇文章不会再去重复 README 里的项目说明，而是直接站在<strong>使用者视角</strong>，讲清楚这些 Skill 对日常使用到底有什么价值。</p>
 <span id="more"></span>
 
 <h2 id="先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”"><a href="#先说结论：Skill-不是“新功能按钮”，而是“更容易命中正确能力”" class="headerlink" title="先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”"></a>先说结论：Skill 不是“新功能按钮”，而是“更容易命中正确能力”</h2><p>这是我研究下来最重要的体感。</p>
