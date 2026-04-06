@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"charles0719.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night-bright"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="从原理到实战，完整讲解 OAuth2 授权码模式，附 GitHub 登录具体示例。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OAuth2 授权流程详解">
+<meta property="og:url" content="https://charles0719.github.io/oauth2-guide.html">
+<meta property="og:site_name" content="Charles&#39;s Blog">
+<meta property="og:description" content="从原理到实战，完整讲解 OAuth2 授权码模式，附 GitHub 登录具体示例。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-04-06T12:30:00.000Z">
+<meta property="article:modified_time" content="2026-04-06T09:36:59.557Z">
+<meta property="article:author" content="Charles Ruan">
+<meta property="article:tag" content="OAuth2">
+<meta property="article:tag" content="授权">
+<meta property="article:tag" content="GitHub 登录">
+<meta property="article:tag" content="后端">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://charles0719.github.io/oauth2-guide.html">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://charles0719.github.io/oauth2-guide.html","path":"/oauth2-guide.html","title":"OAuth2 授权流程详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OAuth2 授权流程详解 | Charles's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Charles's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Charles's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-OAuth2%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">为什么需要 OAuth2？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A7%92%E8%89%B2"><span class="nav-number">2.</span> <span class="nav-text">核心角色</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E7%A7%8D%E6%8E%88%E6%9D%83%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">四种授权模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%88%E6%9D%83%E7%A0%81%E6%A8%A1%E5%BC%8F%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">授权码模式完整流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E6%80%BB%E8%A7%88"><span class="nav-number">4.1.</span> <span class="nav-text">流程总览</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1%EF%BC%9A%E6%9E%84%E9%80%A0%E6%8E%88%E6%9D%83-URL%EF%BC%8C%E5%BC%95%E5%AF%BC%E7%94%A8%E6%88%B7%E8%B7%B3%E8%BD%AC"><span class="nav-number">4.2.</span> <span class="nav-text">Step 1：构造授权 URL，引导用户跳转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2%EF%BC%9A%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E5%B9%B6%E5%90%8C%E6%84%8F%E6%8E%88%E6%9D%83"><span class="nav-number">4.3.</span> <span class="nav-text">Step 2：用户登录并同意授权</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3%EF%BC%9A%E6%9C%8D%E5%8A%A1%E7%AB%AF%E7%94%A8-code-%E6%8D%A2%E5%8F%96-access-token"><span class="nav-number">4.4.</span> <span class="nav-text">Step 3：服务端用 code 换取 access_token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4%EF%BC%9A%E7%94%A8-access-token-%E8%AF%B7%E6%B1%82%E7%94%A8%E6%88%B7%E6%95%B0%E6%8D%AE"><span class="nav-number">4.5.</span> <span class="nav-text">Step 4：用 access_token 请求用户数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-5%EF%BC%9A%E5%AE%8C%E6%88%90%E7%99%BB%E5%BD%95"><span class="nav-number">4.6.</span> <span class="nav-text">Step 5：完成登录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GitHub-%E7%99%BB%E5%BD%95%E5%AE%9E%E6%88%98%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.</span> <span class="nav-text">GitHub 登录实战示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C%EF%BC%9A%E6%B3%A8%E5%86%8C-GitHub-OAuth-App"><span class="nav-number">5.1.</span> <span class="nav-text">准备工作：注册 GitHub OAuth App</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-1%EF%BC%9A%E8%B7%B3%E8%BD%AC-GitHub-%E6%8E%88%E6%9D%83%E9%A1%B5"><span class="nav-number">5.2.</span> <span class="nav-text">Step 1：跳转 GitHub 授权页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-2%EF%BC%9AGitHub-%E5%9B%9E%E8%B0%83%EF%BC%8C%E5%B8%A6%E5%9B%9E-code"><span class="nav-number">5.3.</span> <span class="nav-text">Step 2：GitHub 回调，带回 code</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-3%EF%BC%9A%E7%94%A8-code-%E6%8D%A2-token"><span class="nav-number">5.4.</span> <span class="nav-text">Step 3：用 code 换 token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-4%EF%BC%9A%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="nav-number">5.5.</span> <span class="nav-text">Step 4：获取用户信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Step-5%EF%BC%9A%E5%AE%8C%E6%88%90%E7%99%BB%E5%BD%95-1"><span class="nav-number">5.6.</span> <span class="nav-text">Step 5：完成登录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E8%A6%81%E7%82%B9%E6%B8%85%E5%8D%95"><span class="nav-number">6.</span> <span class="nav-text">安全要点清单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%96%91%E9%97%AE"><span class="nav-number">7.</span> <span class="nav-text">常见疑问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Q%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%9A%E4%B8%80%E6%AD%A5-code%EF%BC%8C%E4%B8%8D%E7%9B%B4%E6%8E%A5%E8%BF%94%E5%9B%9E-token%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">Q：为什么要多一步 code，不直接返回 token？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q%EF%BC%9Aaccess-token-%E8%BF%87%E6%9C%9F%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F"><span class="nav-number">7.2.</span> <span class="nav-text">Q：access_token 过期了怎么办？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q%EF%BC%9A%E7%BA%AF%E5%89%8D%E7%AB%AF%E5%BA%94%E7%94%A8%EF%BC%88SPA%EF%BC%89%E6%80%8E%E4%B9%88%E7%94%A8-OAuth2%EF%BC%9F"><span class="nav-number">7.3.</span> <span class="nav-text">Q：纯前端应用（SPA）怎么用 OAuth2？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q%EF%BC%9AOAuth2-%E6%98%AF%E8%AE%A4%E8%AF%81%E8%BF%98%E6%98%AF%E6%8E%88%E6%9D%83%EF%BC%9F"><span class="nav-number">7.4.</span> <span class="nav-text">Q：OAuth2 是认证还是授权？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Charles Ruan"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Charles Ruan</p>
+  <div class="site-description" itemprop="description">用于写一些心得,学习内容,知识分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/charles0719" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;charles0719" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:17625904731@163.com" title="E-Mail → mailto:17625904731@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://charles0719.github.io/oauth2-guide.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charles Ruan">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Charles's Blog">
+      <meta itemprop="description" content="用于写一些心得,学习内容,知识分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="OAuth2 授权流程详解 | Charles's Blog">
+      <meta itemprop="description" content="从原理到实战，完整讲解 OAuth2 授权码模式，附 GitHub 登录具体示例。">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OAuth2 授权流程详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-04-06 20:30:00 / 修改时间：17:36:59" itemprop="dateCreated datePublished" datetime="2026-04-06T20:30:00+08:00">2026-04-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/" itemprop="url" rel="index"><span itemprop="name">技术分享</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">从原理到实战，完整讲解 OAuth2 授权码模式，附 GitHub 登录具体示例。</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>OAuth2 是目前最主流的第三方授权框架，几乎所有“用 GitHub &#x2F; Google &#x2F; 微信登录”的功能背后都是它。本文从核心概念讲起，完整走一遍授权码模式的流程，最后用 GitHub 登录的真实例子落地说明。</p>
+<span id="more"></span>
+
+<h2 id="为什么需要-OAuth2？"><a href="#为什么需要-OAuth2？" class="headerlink" title="为什么需要 OAuth2？"></a>为什么需要 OAuth2？</h2><p>假设某应用想读取你的 GitHub 仓库列表。最原始的做法是让你直接把 GitHub 账号密码交给它，但这显然不可接受：密码一旦泄漏，账号就彻底失控，而且你没法限制它只能读仓库、不能删仓库。</p>
+<p>OAuth2 解决的就是这个问题：让用户在不暴露密码的前提下，向第三方应用授予有限的访问权限。</p>
+<h2 id="核心角色"><a href="#核心角色" class="headerlink" title="核心角色"></a>核心角色</h2><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>英文术语</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>资源拥有者</td>
+<td>Resource Owner</td>
+<td>用户本人，拥有被访问的数据</td>
+</tr>
+<tr>
+<td>客户端</td>
+<td>Client</td>
+<td>想获取用户数据的第三方应用</td>
+</tr>
+<tr>
+<td>授权服务器</td>
+<td>Authorization Server</td>
+<td>验证用户身份、颁发令牌，例如 GitHub 的 OAuth 服务</td>
+</tr>
+<tr>
+<td>资源服务器</td>
+<td>Resource Server</td>
+<td>存放用户数据的 API，例如 GitHub API</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>在 GitHub 场景中，授权服务器和资源服务器都是 GitHub，只是职责不同。</p>
+</blockquote>
+<h2 id="四种授权模式"><a href="#四种授权模式" class="headerlink" title="四种授权模式"></a>四种授权模式</h2><table>
+<thead>
+<tr>
+<th>模式</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>授权码模式（Authorization Code）</td>
+<td>有服务端的 Web 应用，最安全，最常用</td>
+</tr>
+<tr>
+<td>隐式模式（Implicit）</td>
+<td>纯前端 SPA，已逐渐被 PKCE 替代</td>
+</tr>
+<tr>
+<td>客户端凭证（Client Credentials）</td>
+<td>服务间调用，无用户参与</td>
+</tr>
+<tr>
+<td>密码模式（Resource Owner Password）</td>
+<td>高度信任的场景，不推荐</td>
+</tr>
+</tbody></table>
+<p>本文重点讲授权码模式，这也是日常“第三方登录”的标准实现。</p>
+<h2 id="授权码模式完整流程"><a href="#授权码模式完整流程" class="headerlink" title="授权码模式完整流程"></a>授权码模式完整流程</h2><h3 id="流程总览"><a href="#流程总览" class="headerlink" title="流程总览"></a>流程总览</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">用户浏览器        客户端应用（服务端）        授权服务器           资源服务器</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |--- 点击“第三方登录” --&gt;|                      |                     |</span><br><span class="line">    |                    |-- 构造授权 URL，重定向 -&gt;|                     |</span><br><span class="line">    |&lt;-------- 显示授权 / 登录页面 ------------------------------          |</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |--- 输入账密，点击“授权” ----------------------&gt;|                     |</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |&lt;------- 带 code 重定向回客户端 --------------|                     |</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |         code 传给服务端                      |                     |</span><br><span class="line">    |                    |-- POST: code + secret -&gt;|                     |</span><br><span class="line">    |                    |&lt;-- 返回 access_token --|                     |</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |                    |-- GET /user (Bearer token) -----------------&gt;|</span><br><span class="line">    |                    |&lt;-- 返回用户数据 --------------------------------|</span><br><span class="line">    |                    |                      |                     |</span><br><span class="line">    |&lt;-- 登录成功，建立 Session --|               |                     |</span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-1：构造授权-URL，引导用户跳转"><a href="#Step-1：构造授权-URL，引导用户跳转" class="headerlink" title="Step 1：构造授权 URL，引导用户跳转"></a>Step 1：构造授权 URL，引导用户跳转</h3><p>用户点击登录按钮后，客户端将用户重定向到授权服务器的授权页面：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">https://auth-server.com/oauth/authorize</span><br><span class="line">  ?response_type=code</span><br><span class="line">  &amp;client_id=YOUR_CLIENT_ID</span><br><span class="line">  &amp;redirect_uri=https://your-app.com/callback</span><br><span class="line">  &amp;scope=read:user email</span><br><span class="line">  &amp;state=RANDOM_STRING</span><br></pre></td></tr></table></figure>
+
+<p>关键参数说明：</p>
+<ul>
+<li><code>client_id</code>：应用在授权服务器注册时分配，公开可见</li>
+<li><code>scope</code>：精确声明需要哪些权限，用户会在授权页看到这些权限列表</li>
+<li><code>state</code>：客户端随机生成，授权完成后原样返回，用于校验，防止跨站请求伪造</li>
+</ul>
+<h3 id="Step-2：用户登录并同意授权"><a href="#Step-2：用户登录并同意授权" class="headerlink" title="Step 2：用户登录并同意授权"></a>Step 2：用户登录并同意授权</h3><p>用户在授权服务器的页面上完成登录，并点击“允许授权”。</p>
+<p>授权服务器随后将用户重定向回 <code>redirect_uri</code>，并附上授权码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://your-app.com/callback?code=AUTH_CODE_HERE&amp;state=RANDOM_STRING</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>code</code> 是一次性的短期凭证，有效期通常只有几分钟，且只能使用一次。</p>
+</blockquote>
+<h3 id="Step-3：服务端用-code-换取-access-token"><a href="#Step-3：服务端用-code-换取-access-token" class="headerlink" title="Step 3：服务端用 code 换取 access_token"></a>Step 3：服务端用 code 换取 access_token</h3><p>这一步必须在服务端完成，不能在浏览器端执行。客户端服务端向授权服务器发起 POST 请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">POST https://auth-server.com/oauth/token</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line">grant_type=authorization_code</span><br><span class="line">&amp;code=AUTH_CODE_HERE</span><br><span class="line">&amp;redirect_uri=https://your-app.com/callback</span><br><span class="line">&amp;client_id=YOUR_CLIENT_ID</span><br><span class="line">&amp;client_secret=YOUR_CLIENT_SECRET</span><br></pre></td></tr></table></figure>
+
+<p>授权服务器验证通过后，返回令牌：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;access_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;gho_xxxxxxxxxxxxxxxxxxxx&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;token_type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bearer&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;scope&quot;</span><span class="punctuation">:</span> <span class="string">&quot;read:user,email&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;expires_in&quot;</span><span class="punctuation">:</span> <span class="number">28800</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><code>client_secret</code> 是应用的私钥，只能存在服务端，绝不能暴露给浏览器或客户端代码。</p>
+</blockquote>
+<h3 id="Step-4：用-access-token-请求用户数据"><a href="#Step-4：用-access-token-请求用户数据" class="headerlink" title="Step 4：用 access_token 请求用户数据"></a>Step 4：用 access_token 请求用户数据</h3><p>拿到令牌后，客户端向资源服务器请求所需数据：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET https://api.auth-server.com/user</span><br><span class="line"><span class="attribute">Authorization</span><span class="punctuation">: </span>Bearer gho_xxxxxxxxxxxxxxxxxxxx</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>application/json</span><br></pre></td></tr></table></figure>
+
+<p>资源服务器验证令牌有效后，返回用户信息：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">123456</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;login&quot;</span><span class="punctuation">:</span> <span class="string">&quot;username&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;email&quot;</span><span class="punctuation">:</span> <span class="string">&quot;user@example.com&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;张三&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;avatar_url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://avatars.githubusercontent.com/u/123456&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-5：完成登录"><a href="#Step-5：完成登录" class="headerlink" title="Step 5：完成登录"></a>Step 5：完成登录</h3><p>客户端拿到用户信息后：</p>
+<ol>
+<li>在数据库中查找该用户，通过第三方 <code>id</code> 匹配</li>
+<li>若不存在，自动注册创建新用户</li>
+<li>建立登录态，签发 Session 或 JWT</li>
+<li>将登录态写入 Cookie，返回给浏览器</li>
+</ol>
+<p>用户登录完成。</p>
+<h2 id="GitHub-登录实战示例"><a href="#GitHub-登录实战示例" class="headerlink" title="GitHub 登录实战示例"></a>GitHub 登录实战示例</h2><h3 id="准备工作：注册-GitHub-OAuth-App"><a href="#准备工作：注册-GitHub-OAuth-App" class="headerlink" title="准备工作：注册 GitHub OAuth App"></a>准备工作：注册 GitHub OAuth App</h3><ol>
+<li>进入 GitHub -&gt; Settings -&gt; Developer settings -&gt; OAuth Apps -&gt; New OAuth App</li>
+<li>填写应用信息：<ul>
+<li><code>Application name</code>：你的应用名</li>
+<li><code>Homepage URL</code>：<code>https://your-app.com</code></li>
+<li><code>Authorization callback URL</code>：<code>https://your-app.com/auth/github/callback</code></li>
+</ul>
+</li>
+<li>提交后获得 <code>Client ID</code> 和 <code>Client Secret</code></li>
+</ol>
+<h3 id="Step-1：跳转-GitHub-授权页"><a href="#Step-1：跳转-GitHub-授权页" class="headerlink" title="Step 1：跳转 GitHub 授权页"></a>Step 1：跳转 GitHub 授权页</h3><p>用户点击“用 GitHub 登录”，后端重定向到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/login/oauth/authorize</span><br><span class="line">  ?client_id=Ov23liABCDEFGHIJ</span><br><span class="line">  &amp;redirect_uri=https://your-app.com/auth/github/callback</span><br><span class="line">  &amp;scope=read:user user:email</span><br><span class="line">  &amp;state=csrf_token_abc123</span><br></pre></td></tr></table></figure>
+
+<p>用户会看到 GitHub 的授权确认页，显示应用名称及申请的权限。</p>
+<h3 id="Step-2：GitHub-回调，带回-code"><a href="#Step-2：GitHub-回调，带回-code" class="headerlink" title="Step 2：GitHub 回调，带回 code"></a>Step 2：GitHub 回调，带回 code</h3><p>用户点击“Authorize”后，GitHub 重定向到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">https://your-app.com/auth/github/callback</span><br><span class="line">  ?code=a1b2c3d4e5f6</span><br><span class="line">  &amp;state=csrf_token_abc123</span><br></pre></td></tr></table></figure>
+
+<p>服务端首先校验 <code>state</code> 是否与 Step 1 发出的一致，防止 CSRF。</p>
+<h3 id="Step-3：用-code-换-token"><a href="#Step-3：用-code-换-token" class="headerlink" title="Step 3：用 code 换 token"></a>Step 3：用 code 换 token</h3><p>服务端发起请求：</p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">POST https://github.com/login/oauth/access_token</span><br><span class="line"><span class="attribute">Accept</span><span class="punctuation">: </span>application/json</span><br><span class="line"><span class="attribute">Content-Type</span><span class="punctuation">: </span>application/x-www-form-urlencoded</span><br><span class="line"></span><br><span class="line">client_id=Ov23liABCDEFGHIJ</span><br><span class="line">&amp;client_secret=your_client_secret_here</span><br><span class="line">&amp;code=a1b2c3d4e5f6</span><br></pre></td></tr></table></figure>
+
+<p>GitHub 返回：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;access_token&quot;</span><span class="punctuation">:</span> <span class="string">&quot;gho_16C7e42F292c6912E7710c838347Ae178B4a&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;scope&quot;</span><span class="punctuation">:</span> <span class="string">&quot;read:user,user:email&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;token_type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bearer&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Step-4：获取用户信息"><a href="#Step-4：获取用户信息" class="headerlink" title="Step 4：获取用户信息"></a>Step 4：获取用户信息</h3><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GET https://api.github.com/user</span><br><span class="line"><span class="attribute">Authorization</span><span class="punctuation">: </span>Bearer gho_16C7e42F292c6912E7710c838347Ae178B4a</span><br><span class="line"><span class="attribute">User-Agent</span><span class="punctuation">: </span>your-app-name</span><br></pre></td></tr></table></figure>
+
+<p>返回：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="number">7890123</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;login&quot;</span><span class="punctuation">:</span> <span class="string">&quot;octocat&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;The Octocat&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;email&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;avatar_url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://github.com/images/error/octocat_happy.gif&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>GitHub 的 <code>email</code> 字段可能为 <code>null</code>。如果用户设置了邮箱隐私，需要额外请求 <code>GET /user/emails</code> 获取邮箱列表。</p>
+</blockquote>
+<h3 id="Step-5：完成登录-1"><a href="#Step-5：完成登录-1" class="headerlink" title="Step 5：完成登录"></a>Step 5：完成登录</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 伪代码示例</span></span><br><span class="line">user = db.find_by_github_id(github_id=<span class="number">7890123</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> user:</span><br><span class="line">    user = db.create_user(</span><br><span class="line">        github_id=<span class="number">7890123</span>,</span><br><span class="line">        username=<span class="string">&quot;octocat&quot;</span>,</span><br><span class="line">        email=<span class="string">&quot;octocat@github.com&quot;</span>,</span><br><span class="line">        avatar=avatar_url</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">session[<span class="string">&quot;user_id&quot;</span>] = user.<span class="built_in">id</span></span><br><span class="line"><span class="keyword">return</span> redirect(<span class="string">&quot;/dashboard&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="安全要点清单"><a href="#安全要点清单" class="headerlink" title="安全要点清单"></a>安全要点清单</h2><table>
+<thead>
+<tr>
+<th>要点</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>client_secret</code> 只存服务端</td>
+<td>浏览器可见则等同泄漏，攻击者可伪造任意 token 请求</td>
+</tr>
+<tr>
+<td>校验 <code>state</code> 参数</td>
+<td>防止 CSRF 攻击，让攻击者无法伪造授权回调</td>
+</tr>
+<tr>
+<td><code>code</code> 只能用一次</td>
+<td>授权码如被截获，也因已消费而无效</td>
+</tr>
+<tr>
+<td>严格匹配 <code>redirect_uri</code></td>
+<td>防止授权码被重定向到攻击者控制的地址</td>
+</tr>
+<tr>
+<td>Token 存 httpOnly Cookie</td>
+<td>防止 XSS 脚本读取 Token，不要存 localStorage</td>
+</tr>
+<tr>
+<td>最小化 <code>scope</code></td>
+<td>只申请必要权限，降低 Token 泄漏的危害范围</td>
+</tr>
+<tr>
+<td>Token 设置过期时间</td>
+<td>配合 <code>refresh_token</code> 机制，减少长期有效 Token 的风险</td>
+</tr>
+</tbody></table>
+<h2 id="常见疑问"><a href="#常见疑问" class="headerlink" title="常见疑问"></a>常见疑问</h2><h3 id="Q：为什么要多一步-code，不直接返回-token？"><a href="#Q：为什么要多一步-code，不直接返回-token？" class="headerlink" title="Q：为什么要多一步 code，不直接返回 token？"></a>Q：为什么要多一步 code，不直接返回 token？</h3><p><code>code</code> 通过 URL 传递，会被浏览器历史、服务器日志记录。而 token 的交换发生在服务端之间的 HTTPS 请求中，不经过浏览器，更安全。<code>code</code> 短暂有效且一次性使用，即使被截获也难以利用。</p>
+<h3 id="Q：access-token-过期了怎么办？"><a href="#Q：access-token-过期了怎么办？" class="headerlink" title="Q：access_token 过期了怎么办？"></a>Q：access_token 过期了怎么办？</h3><p>完整的 OAuth2 实现会同时颁发 <code>refresh_token</code>。当 <code>access_token</code> 过期后，用 <code>refresh_token</code> 静默换取新的 <code>access_token</code>，无需用户重新授权。GitHub 的 OAuth App 默认不过期，GitHub App 则有过期机制。</p>
+<h3 id="Q：纯前端应用（SPA）怎么用-OAuth2？"><a href="#Q：纯前端应用（SPA）怎么用-OAuth2？" class="headerlink" title="Q：纯前端应用（SPA）怎么用 OAuth2？"></a>Q：纯前端应用（SPA）怎么用 OAuth2？</h3><p>没有服务端就无法安全保存 <code>client_secret</code>，推荐使用带 PKCE（Proof Key for Code Exchange）的授权码模式。PKCE 用动态生成的 <code>code_verifier</code> &#x2F; <code>code_challenge</code> 替代 <code>client_secret</code>，实现纯前端的安全授权。</p>
+<h3 id="Q：OAuth2-是认证还是授权？"><a href="#Q：OAuth2-是认证还是授权？" class="headerlink" title="Q：OAuth2 是认证还是授权？"></a>Q：OAuth2 是认证还是授权？</h3><p>OAuth2 本质是授权框架，解决的是“能不能访问”的问题，并不定义用户身份。OpenID Connect（OIDC）是在 OAuth2 之上构建的认证层，通过额外的 <code>id_token</code> 传递用户身份信息。严格来说，“用第三方登录”更接近 OIDC。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>OAuth2 授权码模式的核心是一次“三方握手”：</p>
+<ol>
+<li>客户端把用户送到授权服务器，拿回一个一次性 <code>code</code></li>
+<li>服务端用 <code>code + secret</code> 换取 <code>access_token</code>，这步在后端完成，浏览器不可见</li>
+<li>用 token 向资源服务器换取用户数据</li>
+</ol>
+<p>整个设计的精妙之处在于：密码从不经过客户端，token 的核心交换不经过浏览器，<code>code</code> 短暂有效且一次性，每一层都有独立的安全保障。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/OAuth2/" rel="tag"># OAuth2</a>
+              <a href="/tags/%E6%8E%88%E6%9D%83/" rel="tag"># 授权</a>
+              <a href="/tags/GitHub-%E7%99%BB%E5%BD%95/" rel="tag"># GitHub 登录</a>
+              <a href="/tags/%E5%90%8E%E7%AB%AF/" rel="tag"># 后端</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/claude-code-skill-create-guide.html" rel="prev" title="如何从零创建一个简单 Skill：目录结构、SKILL.md 和最小可用模板">
+                  <i class="fa fa-angle-left"></i> 如何从零创建一个简单 Skill：目录结构、SKILL.md 和最小可用模板
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Charles Ruan</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">24k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">22 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
