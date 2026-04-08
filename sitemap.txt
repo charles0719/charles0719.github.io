@@ -1,3 +1,4 @@
+https://charles0719.github.io/colleague-skill-architecture-analysis.html
 https://charles0719.github.io/oauth2-guide.html
 https://charles0719.github.io/any-agent-guide.html
 https://charles0719.github.io/claude-code-skill-create-guide.html
@@ -6,10 +7,10 @@ https://charles0719.github.io/chrome%E6%8F%92%E4%BB%B6.html
 https://charles0719.github.io/raven-agent-resume-pdf.html
 https://charles0719.github.io/claude-code-marketplace-plugin-skill.html
 https://charles0719.github.io/tags/index.html
-https://charles0719.github.io/about/index.html
+https://charles0719.github.io/about/test.html
 https://charles0719.github.io/categories/index.html
 https://charles0719.github.io/schedule/index.html
-https://charles0719.github.io/about/test.html
+https://charles0719.github.io/about/index.html
 https://charles0719.github.io/
 https://charles0719.github.io/tags/any-agent/
 https://charles0719.github.io/tags/Claude-Code/
@@ -19,6 +20,8 @@ https://charles0719.github.io/tags/%E6%8F%92%E4%BB%B6/
 https://charles0719.github.io/tags/%E6%95%88%E7%8E%87/
 https://charles0719.github.io/tags/Claude-Agent-SDK/
 https://charles0719.github.io/tags/AI/
+https://charles0719.github.io/tags/Claude-Code/
+https://charles0719.github.io/tags/AgentSkills/
 https://charles0719.github.io/tags/OAuth2/
 https://charles0719.github.io/tags/%E6%8E%88%E6%9D%83/
 https://charles0719.github.io/tags/GitHub-%E7%99%BB%E5%BD%95/
@@ -26,3 +29,4 @@ https://charles0719.github.io/tags/%E5%90%8E%E7%AB%AF/
 https://charles0719.github.io/tags/%E5%B7%A5%E5%85%B7/
 https://charles0719.github.io/categories/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/
 https://charles0719.github.io/categories/%E5%B7%A5%E5%85%B7%E6%8E%A8%E8%8D%90/
+https://charles0719.github.io/categories/AI%E5%B7%A5%E5%85%B7/
