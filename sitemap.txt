@@ -7,10 +7,10 @@ https://charles0719.github.io/chrome%E6%8F%92%E4%BB%B6.html
 https://charles0719.github.io/raven-agent-resume-pdf.html
 https://charles0719.github.io/claude-code-marketplace-plugin-skill.html
 https://charles0719.github.io/tags/index.html
-https://charles0719.github.io/about/test.html
-https://charles0719.github.io/categories/index.html
-https://charles0719.github.io/schedule/index.html
 https://charles0719.github.io/about/index.html
+https://charles0719.github.io/about/test.html
+https://charles0719.github.io/schedule/index.html
+https://charles0719.github.io/categories/index.html
 https://charles0719.github.io/
 https://charles0719.github.io/tags/any-agent/
 https://charles0719.github.io/tags/Claude-Code/

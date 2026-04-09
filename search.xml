@@ -634,304 +634,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Claude Code 插件体系：Marketplace、Plugin、Skill 三层关系梳理</title>
-    <url>/claude-code-marketplace-plugin-skill.html</url>
-    <content><![CDATA[<p>最近在整理自己的 Claude Code 插件仓库，顺便把 Marketplace、Plugin、Skill 这三层关系梳理一下，官方文档写得比较分散，这里做个简单总结。</p>
-<span id="more"></span>
-
-<h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p><strong>Marketplace 是仓库，Plugin 是包，Skill 是功能。</strong></p>
-<p>一个 Marketplace（Git 仓库）里可以包含多个 Plugin，每个 Plugin 下面又可以有多个 Skill。Claude Code 通过这三层结构来组织和分发扩展能力。</p>
-<h2 id="三层结构关系"><a href="#三层结构关系" class="headerlink" title="三层结构关系"></a>三层结构关系</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Marketplace（Git 仓库）</span><br><span class="line"> └── plugins/</span><br><span class="line">      ├── plugin-a/                    ← Plugin A</span><br><span class="line">      │    ├── .claude-plugin/</span><br><span class="line">      │    │    └── plugin.json        ← 插件元信息</span><br><span class="line">      │    └── skills/</span><br><span class="line">      │         ├── skill-1/           ← Skill 1</span><br><span class="line">      │         │    ├── SKILL.md      ← 技能定义（触发条件、行为）</span><br><span class="line">      │         │    └── references/   ← 参考资料</span><br><span class="line">      │         └── skill-2/           ← Skill 2</span><br><span class="line">      │              └── SKILL.md</span><br><span class="line">      └── plugin-b/                    ← Plugin B</span><br><span class="line">           └── ...</span><br></pre></td></tr></table></figure>
-
-<h2 id="每一层是什么"><a href="#每一层是什么" class="headerlink" title="每一层是什么"></a>每一层是什么</h2><h3 id="Marketplace-——-分发渠道"><a href="#Marketplace-——-分发渠道" class="headerlink" title="Marketplace —— 分发渠道"></a>Marketplace —— 分发渠道</h3><p>Marketplace 就是一个 Git 仓库，充当”应用商店”的角色。一个 Marketplace 下可以放多个 Plugin。</p>
-<p>添加 Marketplace：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin marketplace add https://github.com/xxx/your-marketplace.git</span><br></pre></td></tr></table></figure>
-
-<p>添加之后 Claude Code 会把仓库克隆到本地缓存，你就可以从里面安装 Plugin 了。</p>
-<h3 id="Plugin-——-能力包"><a href="#Plugin-——-能力包" class="headerlink" title="Plugin —— 能力包"></a>Plugin —— 能力包</h3><p>Plugin 是一组相关 Skill 的集合，通过 <code>plugin.json</code> 声明元信息（名称、描述、作者）。</p>
-<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;utility-tools&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;实用工具技能集&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;author&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;charles0719&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>安装 Plugin：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin install utility-tools</span><br></pre></td></tr></table></figure>
-
-<p>安装后，这个 Plugin 下的所有 Skill 就可以被 Claude Code 使用了。</p>
-<h3 id="Skill-——-具体能力"><a href="#Skill-——-具体能力" class="headerlink" title="Skill —— 具体能力"></a>Skill —— 具体能力</h3><p>Skill 是最小的功能单元，每个 Skill 通过 <code>SKILL.md</code> 定义：</p>
-<ul>
-<li><strong>触发条件</strong>：什么情况下自动激活（关键词匹配、用户意图识别等）</li>
-<li><strong>行为描述</strong>：激活后 Claude 应该怎么做</li>
-<li><strong>参考资料</strong>：<code>references/</code> 目录下的文档，作为 Skill 执行时的知识库</li>
-</ul>
-<p>大部分 Skill 是<strong>自动触发</strong>的，不需要手动调用。比如当你问”如何使用 Claude Agent SDK”，对应的 Skill 会自动激活。少数 Skill 通过斜杠命令手动调用，如 <code>/session-harvest</code>。</p>
-<h2 id="实际例子"><a href="#实际例子" class="headerlink" title="实际例子"></a>实际例子</h2><p>以 <a href="https://github.com/yuebanhome/any-agent">any-agent</a> 这个 Marketplace 为例：</p>
-<table>
-<thead>
-<tr>
-<th>Plugin</th>
-<th>包含的 Skill</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>agent-sdk-guide</code></td>
-<td><code>claude-agent-sdk</code>、<code>agent-sdk-custom-tools</code>、<code>agent-sdk-sessions</code>、<code>agent-sdk-advanced</code></td>
-<td>Agent SDK 使用指南，按主题拆分为 4 个 Skill</td>
-</tr>
-<tr>
-<td><code>session-harvest</code></td>
-<td><code>session-harvest</code></td>
-<td>从会话中提取知识，生成可复用的 Skill</td>
-</tr>
-<tr>
-<td><code>claude-plugin-marketplace-setup</code></td>
-<td><code>claude-plugin-marketplace-setup</code></td>
-<td>教你如何创建自己的 Marketplace</td>
-</tr>
-</tbody></table>
-<p>可以看到，一个 Plugin 可以只有一个 Skill（如 <code>session-harvest</code>），也可以有多个 Skill（如 <code>agent-sdk-guide</code> 下有 4 个）。拆分粒度取决于功能的复杂度和关联性。</p>
-<h2 id="类比理解"><a href="#类比理解" class="headerlink" title="类比理解"></a>类比理解</h2><p>如果用手机应用商店来类比：</p>
-<table>
-<thead>
-<tr>
-<th>概念</th>
-<th>类比</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Marketplace</td>
-<td>App Store &#x2F; 应用商店</td>
-<td>分发渠道，可以有多个</td>
-</tr>
-<tr>
-<td>Plugin</td>
-<td>App &#x2F; 应用</td>
-<td>安装&#x2F;卸载的基本单位</td>
-</tr>
-<tr>
-<td>Skill</td>
-<td>App 内的功能模块</td>
-<td>安装 App 后自动获得的具体能力</td>
-</tr>
-</tbody></table>
-<h2 id="如何创建自己的-Marketplace"><a href="#如何创建自己的-Marketplace" class="headerlink" title="如何创建自己的 Marketplace"></a>如何创建自己的 Marketplace</h2><p>如果你也想整理自己的插件，目录结构按上面的规范来就行。核心文件：</p>
-<ul>
-<li><strong>根目录</strong> <code>.claude-plugin/marketplace.json</code>：声明这是一个 Marketplace</li>
-<li><strong>每个 Plugin</strong> <code>.claude-plugin/plugin.json</code>：声明插件元信息</li>
-<li><strong>每个 Skill</strong> <code>SKILL.md</code>：定义触发条件和行为</li>
-</ul>
-<p>具体的 schema 可以参考 <a href="https://github.com/yuebanhome/any-agent/tree/main/plugins/claude-plugin-marketplace-setup">claude-plugin-marketplace-setup</a> 这个 Skill，里面有完整的规范说明。</p>
-]]></content>
-      <categories>
-        <category>技术分享</category>
-      </categories>
-      <tags>
-        <tag>Claude Code</tag>
-        <tag>AI</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>如何从零创建一个简单 Skill：目录结构、SKILL.md 和最小可用模板</title>
-    <url>/claude-code-skill-create-guide.html</url>
-    <content><![CDATA[<p>最近在研究 Claude Code 里的 Skill 机制，发现很多资料都讲到了 Skill 的作用，但第一次真正准备自己动手写时，脑子里最常见的问题其实是这些：</p>
-<ul>
-<li>一个 Skill 最少要包含哪些东西？</li>
-<li><code>SKILL.md</code> 里到底该写什么？</li>
-<li><code>description</code> 为什么这么重要？</li>
-<li>我看到有些地方还有 <code>steps</code>、<code>references</code>、<code>scripts</code>，这些是不是必须的？</li>
-</ul>
-<p>这篇文章就不再泛泛讲概念，而是直接回答一个更实用的问题：</p>
-<p><strong>如果你现在就想创建一个最简单、但真的能工作的 Skill，应该怎么做。</strong></p>
-<span id="more"></span>
-
-<h2 id="先说结论：一个-Skill-最少只需要两样东西"><a href="#先说结论：一个-Skill-最少只需要两样东西" class="headerlink" title="先说结论：一个 Skill 最少只需要两样东西"></a>先说结论：一个 Skill 最少只需要两样东西</h2><p>如果你只追求“先跑起来一个最小可用版本”，那真正的必需项其实非常少：</p>
-<ol>
-<li>一个 Skill 目录</li>
-<li>一个 <code>SKILL.md</code></li>
-</ol>
-<p>最小结构就是：</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">└── SKILL.md</span><br></pre></td></tr></table></figure>
-
-<p>也就是说，第一次创建 Skill，不需要一上来就准备很多附加文件。</p>
-<h2 id="SKILL-md-里最关键的两部分"><a href="#SKILL-md-里最关键的两部分" class="headerlink" title="SKILL.md 里最关键的两部分"></a><code>SKILL.md</code> 里最关键的两部分</h2><p>每个 Skill 最核心的文件就是 <code>SKILL.md</code>。</p>
-<p>它通常包含两部分：</p>
-<ol>
-<li>YAML frontmatter</li>
-<li>Markdown 正文</li>
-</ol>
-<p>最小模板可以长这样：</p>
-<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or check whether a Redis key exists.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify which Redis data or key pattern the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> Explain findings in concise Chinese.</span><br><span class="line"><span class="bullet">4.</span> If the user wants write operations, confirm scope before suggesting changes.</span><br></pre></td></tr></table></figure>
-
-<p>这里最关键的只有两个 frontmatter 字段：</p>
-<ul>
-<li><code>name</code></li>
-<li><code>description</code></li>
-</ul>
-<h2 id="name-是什么"><a href="#name-是什么" class="headerlink" title="name 是什么"></a><code>name</code> 是什么</h2><p><code>name</code> 是这个 Skill 的标识名。</p>
-<p>它有两个非常实用的约束：</p>
-<ul>
-<li>通常应该和 Skill 目录名保持一致</li>
-<li>最好使用小写字母和连字符</li>
-</ul>
-<p>例如：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">redis-status-helper</span></span><br></pre></td></tr></table></figure>
-
-<p>我自己的建议是：</p>
-<ul>
-<li>名字短一点</li>
-<li>尽量让人一眼知道它是干什么的</li>
-<li>不要起得太抽象</li>
-</ul>
-<h2 id="description-为什么特别重要"><a href="#description-为什么特别重要" class="headerlink" title="description 为什么特别重要"></a><code>description</code> 为什么特别重要</h2><p>这是我觉得第一次写 Skill 时最该重视的一点。</p>
-<p><code>description</code> 不是一个普通说明字段，它其实是 Skill 最关键的触发入口之一。</p>
-<p>Claude 会读这段描述，来判断：</p>
-<ul>
-<li>什么时候应该激活这个 Skill</li>
-<li>这个 Skill 适合处理什么问题</li>
-</ul>
-<p>所以如果你把 <code>description</code> 写得很空泛，比如：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Help with coding.&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>那这个 Skill 对模型来说就很难“命中得准”。</p>
-<p>更好的写法应该是：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Use when the user asks how to add custom tools to Claude Agent SDK, mentions createSdkMcpServer, or wants to connect Redis, databases, or internal APIs as tools.&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>这里有两个关键点：</p>
-<ul>
-<li>写清楚用户会怎么问</li>
-<li>写清楚这个 Skill 适合在哪些场景下触发</li>
-</ul>
-<p>所以你可以把 <code>description</code> 理解成：</p>
-<p><strong>Skill 的主要触发说明。</strong></p>
-<h2 id="正文该写什么"><a href="#正文该写什么" class="headerlink" title="正文该写什么"></a>正文该写什么</h2><p>很多人第一次写 Skill 时，会把正文写成一段很长的背景介绍。</p>
-<p>但我现在更推荐一种更实用的写法：</p>
-<ul>
-<li>少讲大道理</li>
-<li>多写“触发后该怎么做”</li>
-</ul>
-<p>也就是说，正文最好偏流程，而不是散文。</p>
-<p>例如：</p>
-<figure class="highlight md"><table><tr><td class="code"><pre><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Ask what Redis key, business module, or status the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> If the user mentions Agent SDK, explain how Redis can be wrapped as a custom tool.</span><br><span class="line"><span class="bullet">4.</span> If the user wants a demo, provide a minimal runnable example.</span><br></pre></td></tr></table></figure>
-
-<p>这里你看到的这些 <code>step</code>，并不是什么必须的 schema 字段，它们只是正文里的一种好写法。</p>
-<p>它的意义是：</p>
-<ul>
-<li>帮 Claude 明白“触发后先做什么，再做什么”</li>
-<li>让 Skill 更像一份工作流程说明，而不是一段模糊说明</li>
-</ul>
-<p>所以如果你在别人的 Skill 里看到：</p>
-<ul>
-<li>Step 1</li>
-<li>Step 2</li>
-<li>Step 3</li>
-</ul>
-<p>不用把它想成“必须配置项”，它更像是一种非常推荐的正文写法。</p>
-<h2 id="一个-Skill-可以再包含哪些东西"><a href="#一个-Skill-可以再包含哪些东西" class="headerlink" title="一个 Skill 可以再包含哪些东西"></a>一个 Skill 可以再包含哪些东西</h2><p>当你的 Skill 不再只是最小版本时，通常还会加入一些可选目录。</p>
-<p>比较常见的是：</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">├── SKILL.md</span><br><span class="line">├── scripts/</span><br><span class="line">├── references/</span><br><span class="line">└── assets/</span><br></pre></td></tr></table></figure>
-
-<p>它们分别解决不同问题。</p>
-<h3 id="scripts"><a href="#scripts" class="headerlink" title="scripts/"></a><code>scripts/</code></h3><p>适合放可执行脚本。</p>
-<p>什么时候该加：</p>
-<ul>
-<li>这件事总是反复做</li>
-<li>你不想每次都让 Claude 重新生成同样的脚本</li>
-<li>你希望结果更稳定</li>
-</ul>
-<p>例如：</p>
-<ul>
-<li>查询某个 API 的脚本</li>
-<li>批量处理文件的脚本</li>
-<li>固定格式转换脚本</li>
-</ul>
-<h3 id="references"><a href="#references" class="headerlink" title="references/"></a><code>references/</code></h3><p>适合放参考资料。</p>
-<p>什么时候该加：</p>
-<ul>
-<li>有一些内容很重要，但不适合全塞进 <code>SKILL.md</code></li>
-<li>你希望 Claude 按需读取，而不是每次都把全文塞进上下文</li>
-</ul>
-<p>例如：</p>
-<ul>
-<li>数据库 schema</li>
-<li>API 文档</li>
-<li>公司内部规则</li>
-<li>某个业务模块的详细说明</li>
-</ul>
-<h3 id="assets"><a href="#assets" class="headerlink" title="assets/"></a><code>assets/</code></h3><p>适合放资源文件。</p>
-<p>例如：</p>
-<ul>
-<li>模板</li>
-<li>图标</li>
-<li>示例文件</li>
-<li>前端样板代码</li>
-</ul>
-<h2 id="一个很推荐的创建顺序"><a href="#一个很推荐的创建顺序" class="headerlink" title="一个很推荐的创建顺序"></a>一个很推荐的创建顺序</h2><p>如果你现在准备从零创建一个 Skill，我会建议按下面这个顺序来。</p>
-<h3 id="第一步：先想清楚用户会怎么问"><a href="#第一步：先想清楚用户会怎么问" class="headerlink" title="第一步：先想清楚用户会怎么问"></a>第一步：先想清楚用户会怎么问</h3><p>这是最重要的一步。</p>
-<p>不要先写目录，不要先写代码，先想：</p>
-<ul>
-<li>用户会怎么描述这个需求？</li>
-<li>哪些提问应该命中这个 Skill？</li>
-<li>命中之后，Claude 应该先做什么？</li>
-</ul>
-<p>如果这一步不清楚，后面 <code>description</code> 就很容易写得很空。</p>
-<h3 id="第二步：先写最小版-SKILL-md"><a href="#第二步：先写最小版-SKILL-md" class="headerlink" title="第二步：先写最小版 SKILL.md"></a>第二步：先写最小版 <code>SKILL.md</code></h3><p>先不要急着上 <code>scripts/</code>、<code>references/</code>、<code>assets/</code>。</p>
-<p>先把最小版写出来：</p>
-<ul>
-<li><code>name</code></li>
-<li><code>description</code></li>
-<li>一段清晰的正文流程</li>
-</ul>
-<p>只要这个最小版能讲清楚触发条件和处理流程，就已经比很多“又大又空”的 Skill 强了。</p>
-<h3 id="第三步：再决定要不要拆资源"><a href="#第三步：再决定要不要拆资源" class="headerlink" title="第三步：再决定要不要拆资源"></a>第三步：再决定要不要拆资源</h3><p>当你发现正文越来越长时，再考虑拆出去：</p>
-<ul>
-<li>可执行逻辑放 <code>scripts/</code></li>
-<li>参考资料放 <code>references/</code></li>
-<li>模板资源放 <code>assets/</code></li>
-</ul>
-<p>这一步的关键不是“目录越完整越专业”，而是：</p>
-<p><strong>让 <code>SKILL.md</code> 保持精炼。</strong></p>
-<h2 id="一个完整但仍然简单的示例"><a href="#一个完整但仍然简单的示例" class="headerlink" title="一个完整但仍然简单的示例"></a>一个完整但仍然简单的示例</h2><p>假设你要做一个 Skill，帮助 Claude 在 Agent SDK 场景下处理 Redis 状态查询。</p>
-<p>目录可以长这样：</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">redis-status-helper/</span><br><span class="line">├── SKILL.md</span><br><span class="line">└── references/</span><br><span class="line">    └── redis-key-patterns.md</span><br></pre></td></tr></table></figure>
-
-<p>其中 <code>SKILL.md</code> 可以写成：</p>
-<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or wrap Redis access as a Claude Agent SDK custom tool.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify whether the user wants read-only inspection or write operations.</span><br><span class="line"><span class="bullet">2.</span> If the user asks about Agent SDK, explain how Redis can be wrapped with tool() and createSdkMcpServer().</span><br><span class="line"><span class="bullet">3.</span> If key patterns are needed, read references/redis-key-patterns.md.</span><br><span class="line"><span class="bullet">4.</span> Prefer concrete examples over abstract explanation.</span><br></pre></td></tr></table></figure>
-
-<p>这已经是一份很像样的 Skill 了。</p>
-<p>它不复杂，但已经具备几个关键点：</p>
-<ul>
-<li>触发条件明确</li>
-<li>处理流程明确</li>
-<li>参考资料入口明确</li>
-</ul>
-<h2 id="写-Skill-时，我觉得最容易踩的坑"><a href="#写-Skill-时，我觉得最容易踩的坑" class="headerlink" title="写 Skill 时，我觉得最容易踩的坑"></a>写 Skill 时，我觉得最容易踩的坑</h2><h3 id="1-description-写得太空"><a href="#1-description-写得太空" class="headerlink" title="1. description 写得太空"></a>1. <code>description</code> 写得太空</h3><p>这是第一大坑。</p>
-<p>如果 <code>description</code> 不具体，Skill 触发效果通常就不会太好。</p>
-<h3 id="2-正文全是背景，没有流程"><a href="#2-正文全是背景，没有流程" class="headerlink" title="2. 正文全是背景，没有流程"></a>2. 正文全是背景，没有流程</h3><p>Skill 正文不是写“这个主题有多重要”，而是写“被触发后 Claude 应该怎么做”。</p>
-<h3 id="3-什么都塞进-SKILL-md"><a href="#3-什么都塞进-SKILL-md" class="headerlink" title="3. 什么都塞进 SKILL.md"></a>3. 什么都塞进 <code>SKILL.md</code></h3><p>如果 schema、API 文档、示例、脚本全塞进去，正文会越来越胖，后面也不容易维护。</p>
-<h3 id="4-一上来就想做很大"><a href="#4-一上来就想做很大" class="headerlink" title="4. 一上来就想做很大"></a>4. 一上来就想做很大</h3><p>我会非常建议第一次先做最小版。</p>
-<p>真的能触发、能工作，再慢慢加 <code>references/</code>、<code>scripts/</code>。</p>
-<h2 id="用一句话总结-Skill-的创建逻辑"><a href="#用一句话总结-Skill-的创建逻辑" class="headerlink" title="用一句话总结 Skill 的创建逻辑"></a>用一句话总结 Skill 的创建逻辑</h2><p>如果让我把整件事压成一句话，我会这样说：</p>
-<p><strong>先用 <code>name + description</code> 定义“什么时候触发”，再用 <code>SKILL.md</code> 正文定义“触发后怎么做”，复杂资料再拆到 <code>references/</code>、<code>scripts/</code>、<code>assets/</code>。</strong></p>
-<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>第一次创建 Skill，其实不用把它想得太重。</p>
-<p>你不需要一开始就做一个很完整的大仓库，也不需要一开始就准备特别复杂的目录。</p>
-<p>更实用的做法反而是：</p>
-<ul>
-<li>先想清楚它要解决什么问题</li>
-<li>先写一个最小可用的 <code>SKILL.md</code></li>
-<li>先把触发和流程写准</li>
-<li>再根据真实使用慢慢迭代</li>
-</ul>
-<p>我觉得这才是最适合真正上手的节奏。</p>
-]]></content>
-      <categories>
-        <category>技术分享</category>
-      </categories>
-      <tags>
-        <tag>Claude Code</tag>
-        <tag>Skill</tag>
-        <tag>AI</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>同事.skill 深度解析：把同事蒸馏成 AI Skill 的完整架构</title>
     <url>/colleague-skill-architecture-analysis.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
@@ -940,6 +642,8 @@
 <p>这是一段黑色幽默，但道出了很多工程师的心声——AI正在改变工作方式。而同事.skill项目却提供了一个有趣的反向思路：<strong>不是让AI取代同事，而是让AI「学会」成为同事</strong>。</p>
 <p>你的同事跳槽了，留下大量文档没人维护？你的导师毕业了，带走所有经验和上下文？<strong>将冰冷的离别化为温暖的 Skill</strong>——这就是同事.skill的核心价值。</p>
 <p>本文将从架构角度深度解析这个项目，帮助你理解它的工作原理、功能模块、以及如何正确使用它。</p>
+<span id="more"></span>
+
 <hr>
 <h2 id="一、核心架构概览"><a href="#一、核心架构概览" class="headerlink" title="一、核心架构概览"></a>一、核心架构概览</h2><p>同事.skill遵循 <a href="https://agentskills.io/">AgentSkills</a> 开放标准，采用<strong>双层驱动架构</strong>：</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────────┐</span><br><span class="line">│                    SKILL.md (入口文件)                    │</span><br><span class="line">│  ┌─────────────────────┐  ┌──────────────────────────┐  │</span><br><span class="line">│  │   Part A: Work Skill │  │    Part B: Persona       │  │</span><br><span class="line">│  │   ─────────────────  │  │    ──────────────────    │  │</span><br><span class="line">│  │   技术规范            │  │    五层性格结构           │  │</span><br><span class="line">│  │   工作流程            │  │    Layer 0: 核心性格     │  │</span><br><span class="line">│  │   经验知识库          │  │    Layer 1: 身份        │  │</span><br><span class="line">│  │   输出风格            │  │    Layer 2: 表达风格    │  │</span><br><span class="line">│  │                      │  │    Layer 3: 决策模式     │  │</span><br><span class="line">│  │                      │  │    Layer 4: 人际行为     │  │</span><br><span class="line">│  │                      │  │    Layer 5: 边界与雷区   │  │</span><br><span class="line">│  └─────────────────────┘  └──────────────────────────┘  │</span><br><span class="line">└─────────────────────────────────────────────────────────┘</span><br><span class="line"></span><br><span class="line">运行逻辑：接到任务 → Persona判断态度 → Work Skill执行 → 用他的语气输出</span><br></pre></td></tr></table></figure>
@@ -1523,6 +1227,304 @@
       <tags>
         <tag>Claude Code</tag>
         <tag>工具</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何从零创建一个简单 Skill：目录结构、SKILL.md 和最小可用模板</title>
+    <url>/claude-code-skill-create-guide.html</url>
+    <content><![CDATA[<p>最近在研究 Claude Code 里的 Skill 机制，发现很多资料都讲到了 Skill 的作用，但第一次真正准备自己动手写时，脑子里最常见的问题其实是这些：</p>
+<ul>
+<li>一个 Skill 最少要包含哪些东西？</li>
+<li><code>SKILL.md</code> 里到底该写什么？</li>
+<li><code>description</code> 为什么这么重要？</li>
+<li>我看到有些地方还有 <code>steps</code>、<code>references</code>、<code>scripts</code>，这些是不是必须的？</li>
+</ul>
+<p>这篇文章就不再泛泛讲概念，而是直接回答一个更实用的问题：</p>
+<p><strong>如果你现在就想创建一个最简单、但真的能工作的 Skill，应该怎么做。</strong></p>
+<span id="more"></span>
+
+<h2 id="先说结论：一个-Skill-最少只需要两样东西"><a href="#先说结论：一个-Skill-最少只需要两样东西" class="headerlink" title="先说结论：一个 Skill 最少只需要两样东西"></a>先说结论：一个 Skill 最少只需要两样东西</h2><p>如果你只追求“先跑起来一个最小可用版本”，那真正的必需项其实非常少：</p>
+<ol>
+<li>一个 Skill 目录</li>
+<li>一个 <code>SKILL.md</code></li>
+</ol>
+<p>最小结构就是：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">└── SKILL.md</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，第一次创建 Skill，不需要一上来就准备很多附加文件。</p>
+<h2 id="SKILL-md-里最关键的两部分"><a href="#SKILL-md-里最关键的两部分" class="headerlink" title="SKILL.md 里最关键的两部分"></a><code>SKILL.md</code> 里最关键的两部分</h2><p>每个 Skill 最核心的文件就是 <code>SKILL.md</code>。</p>
+<p>它通常包含两部分：</p>
+<ol>
+<li>YAML frontmatter</li>
+<li>Markdown 正文</li>
+</ol>
+<p>最小模板可以长这样：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or check whether a Redis key exists.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify which Redis data or key pattern the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> Explain findings in concise Chinese.</span><br><span class="line"><span class="bullet">4.</span> If the user wants write operations, confirm scope before suggesting changes.</span><br></pre></td></tr></table></figure>
+
+<p>这里最关键的只有两个 frontmatter 字段：</p>
+<ul>
+<li><code>name</code></li>
+<li><code>description</code></li>
+</ul>
+<h2 id="name-是什么"><a href="#name-是什么" class="headerlink" title="name 是什么"></a><code>name</code> 是什么</h2><p><code>name</code> 是这个 Skill 的标识名。</p>
+<p>它有两个非常实用的约束：</p>
+<ul>
+<li>通常应该和 Skill 目录名保持一致</li>
+<li>最好使用小写字母和连字符</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">redis-status-helper</span></span><br></pre></td></tr></table></figure>
+
+<p>我自己的建议是：</p>
+<ul>
+<li>名字短一点</li>
+<li>尽量让人一眼知道它是干什么的</li>
+<li>不要起得太抽象</li>
+</ul>
+<h2 id="description-为什么特别重要"><a href="#description-为什么特别重要" class="headerlink" title="description 为什么特别重要"></a><code>description</code> 为什么特别重要</h2><p>这是我觉得第一次写 Skill 时最该重视的一点。</p>
+<p><code>description</code> 不是一个普通说明字段，它其实是 Skill 最关键的触发入口之一。</p>
+<p>Claude 会读这段描述，来判断：</p>
+<ul>
+<li>什么时候应该激活这个 Skill</li>
+<li>这个 Skill 适合处理什么问题</li>
+</ul>
+<p>所以如果你把 <code>description</code> 写得很空泛，比如：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Help with coding.&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>那这个 Skill 对模型来说就很难“命中得准”。</p>
+<p>更好的写法应该是：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">description:</span> <span class="string">&quot;Use when the user asks how to add custom tools to Claude Agent SDK, mentions createSdkMcpServer, or wants to connect Redis, databases, or internal APIs as tools.&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里有两个关键点：</p>
+<ul>
+<li>写清楚用户会怎么问</li>
+<li>写清楚这个 Skill 适合在哪些场景下触发</li>
+</ul>
+<p>所以你可以把 <code>description</code> 理解成：</p>
+<p><strong>Skill 的主要触发说明。</strong></p>
+<h2 id="正文该写什么"><a href="#正文该写什么" class="headerlink" title="正文该写什么"></a>正文该写什么</h2><p>很多人第一次写 Skill 时，会把正文写成一段很长的背景介绍。</p>
+<p>但我现在更推荐一种更实用的写法：</p>
+<ul>
+<li>少讲大道理</li>
+<li>多写“触发后该怎么做”</li>
+</ul>
+<p>也就是说，正文最好偏流程，而不是散文。</p>
+<p>例如：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Ask what Redis key, business module, or status the user wants to inspect.</span><br><span class="line"><span class="bullet">2.</span> Prefer read-only inspection first.</span><br><span class="line"><span class="bullet">3.</span> If the user mentions Agent SDK, explain how Redis can be wrapped as a custom tool.</span><br><span class="line"><span class="bullet">4.</span> If the user wants a demo, provide a minimal runnable example.</span><br></pre></td></tr></table></figure>
+
+<p>这里你看到的这些 <code>step</code>，并不是什么必须的 schema 字段，它们只是正文里的一种好写法。</p>
+<p>它的意义是：</p>
+<ul>
+<li>帮 Claude 明白“触发后先做什么，再做什么”</li>
+<li>让 Skill 更像一份工作流程说明，而不是一段模糊说明</li>
+</ul>
+<p>所以如果你在别人的 Skill 里看到：</p>
+<ul>
+<li>Step 1</li>
+<li>Step 2</li>
+<li>Step 3</li>
+</ul>
+<p>不用把它想成“必须配置项”，它更像是一种非常推荐的正文写法。</p>
+<h2 id="一个-Skill-可以再包含哪些东西"><a href="#一个-Skill-可以再包含哪些东西" class="headerlink" title="一个 Skill 可以再包含哪些东西"></a>一个 Skill 可以再包含哪些东西</h2><p>当你的 Skill 不再只是最小版本时，通常还会加入一些可选目录。</p>
+<p>比较常见的是：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">your-skill/</span><br><span class="line">├── SKILL.md</span><br><span class="line">├── scripts/</span><br><span class="line">├── references/</span><br><span class="line">└── assets/</span><br></pre></td></tr></table></figure>
+
+<p>它们分别解决不同问题。</p>
+<h3 id="scripts"><a href="#scripts" class="headerlink" title="scripts/"></a><code>scripts/</code></h3><p>适合放可执行脚本。</p>
+<p>什么时候该加：</p>
+<ul>
+<li>这件事总是反复做</li>
+<li>你不想每次都让 Claude 重新生成同样的脚本</li>
+<li>你希望结果更稳定</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>查询某个 API 的脚本</li>
+<li>批量处理文件的脚本</li>
+<li>固定格式转换脚本</li>
+</ul>
+<h3 id="references"><a href="#references" class="headerlink" title="references/"></a><code>references/</code></h3><p>适合放参考资料。</p>
+<p>什么时候该加：</p>
+<ul>
+<li>有一些内容很重要，但不适合全塞进 <code>SKILL.md</code></li>
+<li>你希望 Claude 按需读取，而不是每次都把全文塞进上下文</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>数据库 schema</li>
+<li>API 文档</li>
+<li>公司内部规则</li>
+<li>某个业务模块的详细说明</li>
+</ul>
+<h3 id="assets"><a href="#assets" class="headerlink" title="assets/"></a><code>assets/</code></h3><p>适合放资源文件。</p>
+<p>例如：</p>
+<ul>
+<li>模板</li>
+<li>图标</li>
+<li>示例文件</li>
+<li>前端样板代码</li>
+</ul>
+<h2 id="一个很推荐的创建顺序"><a href="#一个很推荐的创建顺序" class="headerlink" title="一个很推荐的创建顺序"></a>一个很推荐的创建顺序</h2><p>如果你现在准备从零创建一个 Skill，我会建议按下面这个顺序来。</p>
+<h3 id="第一步：先想清楚用户会怎么问"><a href="#第一步：先想清楚用户会怎么问" class="headerlink" title="第一步：先想清楚用户会怎么问"></a>第一步：先想清楚用户会怎么问</h3><p>这是最重要的一步。</p>
+<p>不要先写目录，不要先写代码，先想：</p>
+<ul>
+<li>用户会怎么描述这个需求？</li>
+<li>哪些提问应该命中这个 Skill？</li>
+<li>命中之后，Claude 应该先做什么？</li>
+</ul>
+<p>如果这一步不清楚，后面 <code>description</code> 就很容易写得很空。</p>
+<h3 id="第二步：先写最小版-SKILL-md"><a href="#第二步：先写最小版-SKILL-md" class="headerlink" title="第二步：先写最小版 SKILL.md"></a>第二步：先写最小版 <code>SKILL.md</code></h3><p>先不要急着上 <code>scripts/</code>、<code>references/</code>、<code>assets/</code>。</p>
+<p>先把最小版写出来：</p>
+<ul>
+<li><code>name</code></li>
+<li><code>description</code></li>
+<li>一段清晰的正文流程</li>
+</ul>
+<p>只要这个最小版能讲清楚触发条件和处理流程，就已经比很多“又大又空”的 Skill 强了。</p>
+<h3 id="第三步：再决定要不要拆资源"><a href="#第三步：再决定要不要拆资源" class="headerlink" title="第三步：再决定要不要拆资源"></a>第三步：再决定要不要拆资源</h3><p>当你发现正文越来越长时，再考虑拆出去：</p>
+<ul>
+<li>可执行逻辑放 <code>scripts/</code></li>
+<li>参考资料放 <code>references/</code></li>
+<li>模板资源放 <code>assets/</code></li>
+</ul>
+<p>这一步的关键不是“目录越完整越专业”，而是：</p>
+<p><strong>让 <code>SKILL.md</code> 保持精炼。</strong></p>
+<h2 id="一个完整但仍然简单的示例"><a href="#一个完整但仍然简单的示例" class="headerlink" title="一个完整但仍然简单的示例"></a>一个完整但仍然简单的示例</h2><p>假设你要做一个 Skill，帮助 Claude 在 Agent SDK 场景下处理 Redis 状态查询。</p>
+<p>目录可以长这样：</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">redis-status-helper/</span><br><span class="line">├── SKILL.md</span><br><span class="line">└── references/</span><br><span class="line">    └── redis-key-patterns.md</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>SKILL.md</code> 可以写成：</p>
+<figure class="highlight md"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">name: redis-status-helper</span><br><span class="line"><span class="section">description: &quot;Use when the user asks how to inspect Redis task status, debug cached business state, or wrap Redis access as a Claude Agent SDK custom tool.&quot;</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section"># Redis Status Helper</span></span><br><span class="line"></span><br><span class="line">When this skill is activated:</span><br><span class="line"></span><br><span class="line"><span class="bullet">1.</span> Clarify whether the user wants read-only inspection or write operations.</span><br><span class="line"><span class="bullet">2.</span> If the user asks about Agent SDK, explain how Redis can be wrapped with tool() and createSdkMcpServer().</span><br><span class="line"><span class="bullet">3.</span> If key patterns are needed, read references/redis-key-patterns.md.</span><br><span class="line"><span class="bullet">4.</span> Prefer concrete examples over abstract explanation.</span><br></pre></td></tr></table></figure>
+
+<p>这已经是一份很像样的 Skill 了。</p>
+<p>它不复杂，但已经具备几个关键点：</p>
+<ul>
+<li>触发条件明确</li>
+<li>处理流程明确</li>
+<li>参考资料入口明确</li>
+</ul>
+<h2 id="写-Skill-时，我觉得最容易踩的坑"><a href="#写-Skill-时，我觉得最容易踩的坑" class="headerlink" title="写 Skill 时，我觉得最容易踩的坑"></a>写 Skill 时，我觉得最容易踩的坑</h2><h3 id="1-description-写得太空"><a href="#1-description-写得太空" class="headerlink" title="1. description 写得太空"></a>1. <code>description</code> 写得太空</h3><p>这是第一大坑。</p>
+<p>如果 <code>description</code> 不具体，Skill 触发效果通常就不会太好。</p>
+<h3 id="2-正文全是背景，没有流程"><a href="#2-正文全是背景，没有流程" class="headerlink" title="2. 正文全是背景，没有流程"></a>2. 正文全是背景，没有流程</h3><p>Skill 正文不是写“这个主题有多重要”，而是写“被触发后 Claude 应该怎么做”。</p>
+<h3 id="3-什么都塞进-SKILL-md"><a href="#3-什么都塞进-SKILL-md" class="headerlink" title="3. 什么都塞进 SKILL.md"></a>3. 什么都塞进 <code>SKILL.md</code></h3><p>如果 schema、API 文档、示例、脚本全塞进去，正文会越来越胖，后面也不容易维护。</p>
+<h3 id="4-一上来就想做很大"><a href="#4-一上来就想做很大" class="headerlink" title="4. 一上来就想做很大"></a>4. 一上来就想做很大</h3><p>我会非常建议第一次先做最小版。</p>
+<p>真的能触发、能工作，再慢慢加 <code>references/</code>、<code>scripts/</code>。</p>
+<h2 id="用一句话总结-Skill-的创建逻辑"><a href="#用一句话总结-Skill-的创建逻辑" class="headerlink" title="用一句话总结 Skill 的创建逻辑"></a>用一句话总结 Skill 的创建逻辑</h2><p>如果让我把整件事压成一句话，我会这样说：</p>
+<p><strong>先用 <code>name + description</code> 定义“什么时候触发”，再用 <code>SKILL.md</code> 正文定义“触发后怎么做”，复杂资料再拆到 <code>references/</code>、<code>scripts/</code>、<code>assets/</code>。</strong></p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>第一次创建 Skill，其实不用把它想得太重。</p>
+<p>你不需要一开始就做一个很完整的大仓库，也不需要一开始就准备特别复杂的目录。</p>
+<p>更实用的做法反而是：</p>
+<ul>
+<li>先想清楚它要解决什么问题</li>
+<li>先写一个最小可用的 <code>SKILL.md</code></li>
+<li>先把触发和流程写准</li>
+<li>再根据真实使用慢慢迭代</li>
+</ul>
+<p>我觉得这才是最适合真正上手的节奏。</p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>Skill</tag>
+        <tag>AI</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Claude Code 插件体系：Marketplace、Plugin、Skill 三层关系梳理</title>
+    <url>/claude-code-marketplace-plugin-skill.html</url>
+    <content><![CDATA[<p>最近在整理自己的 Claude Code 插件仓库，顺便把 Marketplace、Plugin、Skill 这三层关系梳理一下，官方文档写得比较分散，这里做个简单总结。</p>
+<span id="more"></span>
+
+<h2 id="一句话概括"><a href="#一句话概括" class="headerlink" title="一句话概括"></a>一句话概括</h2><p><strong>Marketplace 是仓库，Plugin 是包，Skill 是功能。</strong></p>
+<p>一个 Marketplace（Git 仓库）里可以包含多个 Plugin，每个 Plugin 下面又可以有多个 Skill。Claude Code 通过这三层结构来组织和分发扩展能力。</p>
+<h2 id="三层结构关系"><a href="#三层结构关系" class="headerlink" title="三层结构关系"></a>三层结构关系</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Marketplace（Git 仓库）</span><br><span class="line"> └── plugins/</span><br><span class="line">      ├── plugin-a/                    ← Plugin A</span><br><span class="line">      │    ├── .claude-plugin/</span><br><span class="line">      │    │    └── plugin.json        ← 插件元信息</span><br><span class="line">      │    └── skills/</span><br><span class="line">      │         ├── skill-1/           ← Skill 1</span><br><span class="line">      │         │    ├── SKILL.md      ← 技能定义（触发条件、行为）</span><br><span class="line">      │         │    └── references/   ← 参考资料</span><br><span class="line">      │         └── skill-2/           ← Skill 2</span><br><span class="line">      │              └── SKILL.md</span><br><span class="line">      └── plugin-b/                    ← Plugin B</span><br><span class="line">           └── ...</span><br></pre></td></tr></table></figure>
+
+<h2 id="每一层是什么"><a href="#每一层是什么" class="headerlink" title="每一层是什么"></a>每一层是什么</h2><h3 id="Marketplace-——-分发渠道"><a href="#Marketplace-——-分发渠道" class="headerlink" title="Marketplace —— 分发渠道"></a>Marketplace —— 分发渠道</h3><p>Marketplace 就是一个 Git 仓库，充当”应用商店”的角色。一个 Marketplace 下可以放多个 Plugin。</p>
+<p>添加 Marketplace：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin marketplace add https://github.com/xxx/your-marketplace.git</span><br></pre></td></tr></table></figure>
+
+<p>添加之后 Claude Code 会把仓库克隆到本地缓存，你就可以从里面安装 Plugin 了。</p>
+<h3 id="Plugin-——-能力包"><a href="#Plugin-——-能力包" class="headerlink" title="Plugin —— 能力包"></a>Plugin —— 能力包</h3><p>Plugin 是一组相关 Skill 的集合，通过 <code>plugin.json</code> 声明元信息（名称、描述、作者）。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;utility-tools&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;description&quot;</span><span class="punctuation">:</span> <span class="string">&quot;实用工具技能集&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;author&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;charles0719&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>安装 Plugin：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/plugin install utility-tools</span><br></pre></td></tr></table></figure>
+
+<p>安装后，这个 Plugin 下的所有 Skill 就可以被 Claude Code 使用了。</p>
+<h3 id="Skill-——-具体能力"><a href="#Skill-——-具体能力" class="headerlink" title="Skill —— 具体能力"></a>Skill —— 具体能力</h3><p>Skill 是最小的功能单元，每个 Skill 通过 <code>SKILL.md</code> 定义：</p>
+<ul>
+<li><strong>触发条件</strong>：什么情况下自动激活（关键词匹配、用户意图识别等）</li>
+<li><strong>行为描述</strong>：激活后 Claude 应该怎么做</li>
+<li><strong>参考资料</strong>：<code>references/</code> 目录下的文档，作为 Skill 执行时的知识库</li>
+</ul>
+<p>大部分 Skill 是<strong>自动触发</strong>的，不需要手动调用。比如当你问”如何使用 Claude Agent SDK”，对应的 Skill 会自动激活。少数 Skill 通过斜杠命令手动调用，如 <code>/session-harvest</code>。</p>
+<h2 id="实际例子"><a href="#实际例子" class="headerlink" title="实际例子"></a>实际例子</h2><p>以 <a href="https://github.com/yuebanhome/any-agent">any-agent</a> 这个 Marketplace 为例：</p>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>包含的 Skill</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>agent-sdk-guide</code></td>
+<td><code>claude-agent-sdk</code>、<code>agent-sdk-custom-tools</code>、<code>agent-sdk-sessions</code>、<code>agent-sdk-advanced</code></td>
+<td>Agent SDK 使用指南，按主题拆分为 4 个 Skill</td>
+</tr>
+<tr>
+<td><code>session-harvest</code></td>
+<td><code>session-harvest</code></td>
+<td>从会话中提取知识，生成可复用的 Skill</td>
+</tr>
+<tr>
+<td><code>claude-plugin-marketplace-setup</code></td>
+<td><code>claude-plugin-marketplace-setup</code></td>
+<td>教你如何创建自己的 Marketplace</td>
+</tr>
+</tbody></table>
+<p>可以看到，一个 Plugin 可以只有一个 Skill（如 <code>session-harvest</code>），也可以有多个 Skill（如 <code>agent-sdk-guide</code> 下有 4 个）。拆分粒度取决于功能的复杂度和关联性。</p>
+<h2 id="类比理解"><a href="#类比理解" class="headerlink" title="类比理解"></a>类比理解</h2><p>如果用手机应用商店来类比：</p>
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>类比</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Marketplace</td>
+<td>App Store &#x2F; 应用商店</td>
+<td>分发渠道，可以有多个</td>
+</tr>
+<tr>
+<td>Plugin</td>
+<td>App &#x2F; 应用</td>
+<td>安装&#x2F;卸载的基本单位</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>App 内的功能模块</td>
+<td>安装 App 后自动获得的具体能力</td>
+</tr>
+</tbody></table>
+<h2 id="如何创建自己的-Marketplace"><a href="#如何创建自己的-Marketplace" class="headerlink" title="如何创建自己的 Marketplace"></a>如何创建自己的 Marketplace</h2><p>如果你也想整理自己的插件，目录结构按上面的规范来就行。核心文件：</p>
+<ul>
+<li><strong>根目录</strong> <code>.claude-plugin/marketplace.json</code>：声明这是一个 Marketplace</li>
+<li><strong>每个 Plugin</strong> <code>.claude-plugin/plugin.json</code>：声明插件元信息</li>
+<li><strong>每个 Skill</strong> <code>SKILL.md</code>：定义触发条件和行为</li>
+</ul>
+<p>具体的 schema 可以参考 <a href="https://github.com/yuebanhome/any-agent/tree/main/plugins/claude-plugin-marketplace-setup">claude-plugin-marketplace-setup</a> 这个 Skill，里面有完整的规范说明。</p>
+]]></content>
+      <categories>
+        <category>技术分享</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>AI</tag>
       </tags>
   </entry>
 </search>
