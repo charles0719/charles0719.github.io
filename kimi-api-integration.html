@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"charles0719.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night-bright"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false,"trigger":"auto"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="如何在 Claude Code、Cursor 等第三方工具中使用 Kimi API Key">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kimi API 第三方集成指南">
+<meta property="og:url" content="https://charles0719.github.io/kimi-api-integration.html">
+<meta property="og:site_name" content="Charles&#39;s Blog">
+<meta property="og:description" content="如何在 Claude Code、Cursor 等第三方工具中使用 Kimi API Key">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-30T16:11:58.000Z">
+<meta property="article:modified_time" content="2026-03-30T16:11:58.000Z">
+<meta property="article:author" content="Charles Ruan">
+<meta property="article:tag" content="Claude Code">
+<meta property="article:tag" content="Kimi">
+<meta property="article:tag" content="API">
+<meta property="article:tag" content="Cursor">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://charles0719.github.io/kimi-api-integration.html">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://charles0719.github.io/kimi-api-integration.html","path":"kimi-api-integration.html","title":"Kimi API 第三方集成指南"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Kimi API 第三方集成指南 | Charles's Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Charles's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Charles's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Stay Hungry, Stay Foolish</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Kimi-API-%E7%AC%AC%E4%B8%89%E6%96%B9%E9%9B%86%E6%88%90%E6%8C%87%E5%8D%97"><span class="nav-number">1.</span> <span class="nav-text">Kimi API 第三方集成指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96-API-Key"><span class="nav-number">1.1.</span> <span class="nav-text">获取 API Key</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E9%85%8D%E7%BD%AE%E5%8F%82%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">核心配置参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Windows-%E9%85%8D%E7%BD%AE%E6%96%B9%E6%B3%95"><span class="nav-number">1.3.</span> <span class="nav-text">Windows 配置方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PowerShell-%E4%B8%B4%E6%97%B6%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.3.1.</span> <span class="nav-text">PowerShell (临时设置)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F-%E6%B0%B8%E4%B9%85%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.3.2.</span> <span class="nav-text">系统环境变量 (永久设置)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E9%85%8D%E7%BD%AE"><span class="nav-number">1.4.</span> <span class="nav-text">验证配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%AF%E6%8C%81%E7%9A%84%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.5.</span> <span class="nav-text">支持的模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%BC%E5%AE%B9%E5%B7%A5%E5%85%B7%E5%88%97%E8%A1%A8"><span class="nav-number">1.6.</span> <span class="nav-text">兼容工具列表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B%EF%BC%9ACursor"><span class="nav-number">1.7.</span> <span class="nav-text">配置示例：Cursor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E7%A4%BA%E4%BE%8B%EF%BC%9AContinue-%E6%8F%92%E4%BB%B6"><span class="nav-number">1.8.</span> <span class="nav-text">配置示例：Continue 插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%B9%E7%94%A8%E8%AF%B4%E6%98%8E"><span class="nav-number">1.9.</span> <span class="nav-text">费用说明</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Charles Ruan"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Charles Ruan</p>
+  <div class="site-description" itemprop="description">用于写一些心得,学习内容,知识分享</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">24</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/charles0719" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;charles0719" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:17625904731@163.com" title="E-Mail → mailto:17625904731@163.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://charles0719.github.io/kimi-api-integration.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charles Ruan">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Charles's Blog">
+      <meta itemprop="description" content="用于写一些心得,学习内容,知识分享">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Kimi API 第三方集成指南 | Charles's Blog">
+      <meta itemprop="description" content="如何在 Claude Code、Cursor 等第三方工具中使用 Kimi API Key">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kimi API 第三方集成指南
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-03-31 00:11:58" itemprop="dateCreated datePublished" datetime="2026-03-31T00:11:58+08:00">2026-03-31</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/AI%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index"><span itemprop="name">AI工具</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+            <div class="post-description">如何在 Claude Code、Cursor 等第三方工具中使用 Kimi API Key</div>
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="Kimi-API-第三方集成指南"><a href="#Kimi-API-第三方集成指南" class="headerlink" title="Kimi API 第三方集成指南"></a>Kimi API 第三方集成指南</h1><p>Kimi 开放平台支持标准的 OpenAI SDK 调用方式，这意味着你可以在各种兼容 OpenAI API 格式的第三方工具中使用 Kimi API Key。</p>
+<span id="more"></span>
+
+<h2 id="获取-API-Key"><a href="#获取-API-Key" class="headerlink" title="获取 API Key"></a>获取 API Key</h2><ol>
+<li>访问 <a href="https://platform.moonshot.cn/">Kimi 开放平台</a></li>
+<li>登录并完成实名认证</li>
+<li>进入「会员中心」→「API Key 管理」</li>
+<li>点击「创建 API Key」，复制生成的密钥</li>
+</ol>
+<h2 id="核心配置参数"><a href="#核心配置参数" class="headerlink" title="核心配置参数"></a>核心配置参数</h2><p>使用第三方工具时，需要配置以下环境变量：</p>
+<table>
+<thead>
+<tr>
+<th>环境变量</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ANTHROPIC_BASE_URL</code></td>
+<td><code>https://api.kimi.com/coding/</code></td>
+<td>Kimi 的 API 端点</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td><code>sk-kimi-...</code></td>
+<td>你的 Kimi API Key</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意</strong>：虽然变量名包含 <code>ANTHROPIC</code>，但这是为了兼容 Claude Code 等工具的设计。实际调用的是 Kimi 的模型服务。</p>
+</blockquote>
+<h2 id="Windows-配置方法"><a href="#Windows-配置方法" class="headerlink" title="Windows 配置方法"></a>Windows 配置方法</h2><h3 id="PowerShell-临时设置"><a href="#PowerShell-临时设置" class="headerlink" title="PowerShell (临时设置)"></a>PowerShell (临时设置)</h3><p>当前终端会话有效，关闭后失效：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$env:ANTHROPIC_BASE_URL</span>=<span class="string">&quot;https://api.kimi.com/coding/&quot;</span></span><br><span class="line"><span class="variable">$env:ANTHROPIC_API_KEY</span>=<span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动 Claude Code</span></span><br><span class="line">claude</span><br></pre></td></tr></table></figure>
+
+<h3 id="系统环境变量-永久设置"><a href="#系统环境变量-永久设置" class="headerlink" title="系统环境变量 (永久设置)"></a>系统环境变量 (永久设置)</h3><p>永久生效，推荐给日常使用：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 设置用户级环境变量</span></span><br><span class="line">[<span class="type">Environment</span>]::SetEnvironmentVariable(<span class="string">&quot;ANTHROPIC_BASE_URL&quot;</span>, <span class="string">&quot;https://api.kimi.com/coding/&quot;</span>, <span class="string">&quot;User&quot;</span>)</span><br><span class="line">[<span class="type">Environment</span>]::SetEnvironmentVariable(<span class="string">&quot;ANTHROPIC_API_KEY&quot;</span>, <span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span>, <span class="string">&quot;User&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>设置完成后，<strong>重启终端</strong>使配置生效。</p>
+<h2 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h2><p>启动 Claude Code 后，输入以下命令验证模型状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/status</span><br></pre></td></tr></table></figure>
+
+<p>如果配置正确，你应该能看到模型信息和使用状态。</p>
+<h2 id="支持的模型"><a href="#支持的模型" class="headerlink" title="支持的模型"></a>支持的模型</h2><p>Kimi 开放平台提供以下模型：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>上下文长度</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>kimi-k2.5</code></td>
+<td>256K</td>
+<td>最新版本，性能最强</td>
+</tr>
+<tr>
+<td><code>kimi-k2</code></td>
+<td>128K</td>
+<td>高性价比</td>
+</tr>
+<tr>
+<td><code>kimi-k1.5</code></td>
+<td>128K</td>
+<td>经典稳定版本</td>
+</tr>
+</tbody></table>
+<h2 id="兼容工具列表"><a href="#兼容工具列表" class="headerlink" title="兼容工具列表"></a>兼容工具列表</h2><p>以下工具已通过测试，支持 Kimi API：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>配置方式</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Claude Code</strong></td>
+<td>环境变量</td>
+<td>完全兼容</td>
+</tr>
+<tr>
+<td><strong>Cursor</strong></td>
+<td>设置 → Models → OpenAI API</td>
+<td>选择 OpenAI 兼容模式</td>
+</tr>
+<tr>
+<td><strong>Continue</strong></td>
+<td><code>config.json</code> 配置</td>
+<td>VS Code 插件</td>
+</tr>
+<tr>
+<td><strong>ChatGPT-Next-Web</strong></td>
+<td>自定义接口设置</td>
+<td>选择 OpenAI 兼容</td>
+</tr>
+</tbody></table>
+<h2 id="配置示例：Cursor"><a href="#配置示例：Cursor" class="headerlink" title="配置示例：Cursor"></a>配置示例：Cursor</h2><ol>
+<li>打开 Cursor Settings（<code>Ctrl/Cmd + ,</code>）</li>
+<li>选择「Models」→「OpenAI API」</li>
+<li>配置如下：<ul>
+<li><strong>Base URL</strong>: <code>https://api.kimi.com/coding/v1</code></li>
+<li><strong>API Key</strong>: <code>sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></li>
+<li><strong>Model</strong>: <code>kimi-k2.5</code></li>
+</ul>
+</li>
+</ol>
+<h2 id="配置示例：Continue-插件"><a href="#配置示例：Continue-插件" class="headerlink" title="配置示例：Continue 插件"></a>配置示例：Continue 插件</h2><p>在 VS Code 的 <code>~/.continue/config.json</code> 中添加：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;models&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;title&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Kimi K2.5&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;provider&quot;</span><span class="punctuation">:</span> <span class="string">&quot;openai&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;model&quot;</span><span class="punctuation">:</span> <span class="string">&quot;kimi-k2.5&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;apiBase&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://api.kimi.com/coding/v1&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;apiKey&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="费用说明"><a href="#费用说明" class="headerlink" title="费用说明"></a>费用说明</h2><p>Kimi API 采用按量计费模式：</p>
+<ul>
+<li><strong>输入 Token</strong>: 按实际使用量计费</li>
+<li><strong>输出 Token</strong>: 按实际使用量计费</li>
+<li><strong>上下文缓存</strong>: 支持，可降低重复输入成本</li>
+</ul>
+<p>建议开启用量预警，避免意外超支。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Claude-Code/" rel="tag"># Claude Code</a>
+              <a href="/tags/Kimi/" rel="tag"># Kimi</a>
+              <a href="/tags/API/" rel="tag"># API</a>
+              <a href="/tags/Cursor/" rel="tag"># Cursor</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/chrome%E6%8F%92%E4%BB%B6.html" rel="prev" title="Chrome 插件推荐">
+                  <i class="fa fa-angle-left"></i> Chrome 插件推荐
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/funasr-audio-to-text.html" rel="next" title="使用 FunASR 实现音频转中文文字">
+                  使用 FunASR 实现音频转中文文字 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 2018 – 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Charles Ruan</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+      <span>站点总字数：</span>
+    <span title="站点总字数">35k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span>站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">32 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

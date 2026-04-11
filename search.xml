@@ -1527,4 +1527,388 @@
         <tag>AI</tag>
       </tags>
   </entry>
+  <entry>
+    <title>使用 FunASR 实现音频转中文文字</title>
+    <url>/funasr-audio-to-text.html</url>
+    <content><![CDATA[<h1 id="使用-FunASR-实现音频转中文文字"><a href="#使用-FunASR-实现音频转中文文字" class="headerlink" title="使用 FunASR 实现音频转中文文字"></a>使用 FunASR 实现音频转中文文字</h1><p>想把播客、录音、课程音频转成文字？本文介绍如何用阿里达摩院的 FunASR 框架在本地完成语音识别，不花一分钱、不限次数、不上传数据。</p>
+<span id="more"></span>
+
+<h2 id="为什么选-FunASR"><a href="#为什么选-FunASR" class="headerlink" title="为什么选 FunASR"></a>为什么选 FunASR</h2><p>市面上语音识别方案不少，先看对比：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>是否免费</th>
+<th>是否本地</th>
+<th>中文效果</th>
+<th>上手难度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FunASR + SenseVoice</strong></td>
+<td>完全免费</td>
+<td>本地运行</td>
+<td>极佳</td>
+<td>简单</td>
+</tr>
+<tr>
+<td>OpenAI Whisper</td>
+<td>免费（本地）&#x2F; 付费（API）</td>
+<td>可本地</td>
+<td>一般</td>
+<td>简单</td>
+</tr>
+<tr>
+<td>百度&#x2F;讯飞&#x2F;腾讯云 API</td>
+<td>有免费额度，超出付费</td>
+<td>云端</td>
+<td>好</td>
+<td>需注册申请</td>
+</tr>
+<tr>
+<td>Google Speech-to-Text</td>
+<td>付费</td>
+<td>云端</td>
+<td>中文一般</td>
+<td>需翻墙</td>
+</tr>
+</tbody></table>
+<p>选择 FunASR 的核心理由：</p>
+<ul>
+<li><strong>中文识别效果最好</strong>：SenseVoice 是阿里达摩院专门为中文优化的模型，对普通话的识别准确率极高，支持中英混合、方言</li>
+<li><strong>完全本地运行</strong>：数据不出本机，隐私有保障</li>
+<li><strong>零成本无限制</strong>：不需要 API Key，不限调用次数，不限音频时长</li>
+<li><strong>附加能力强</strong>：除了转文字，还能识别语种、情绪（开心&#x2F;中性&#x2F;生气）、音频事件（音乐&#x2F;掌声）</li>
+<li><strong>VAD 分段</strong>：内置语音活动检测（Voice Activity Detection），自动切分长音频，无需手动分段</li>
+</ul>
+<p>相比之下，Whisper 虽然也能本地运行，但中文效果明显不如 SenseVoice，尤其在专有名词和口语化表达上差距较大。</p>
+<h2 id="磁盘空间需求"><a href="#磁盘空间需求" class="headerlink" title="磁盘空间需求"></a>磁盘空间需求</h2><p>首次运行需要下载模型，以下是各部分的体积：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>大小</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SenseVoiceSmall 模型 (<code>model.pt</code>)</td>
+<td>~893 MB</td>
+<td>语音识别主模型</td>
+</tr>
+<tr>
+<td>FSMN-VAD 模型</td>
+<td>~5 MB</td>
+<td>语音分段模型</td>
+</tr>
+<tr>
+<td>Python + 依赖包</td>
+<td>~2 GB</td>
+<td>PyTorch、FunASR 等</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td><strong>~3 GB</strong></td>
+<td>首次安装的完整空间</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>模型下载后会缓存到本地 <code>~/.cache/modelscope/</code> 目录，后续运行不会重复下载。<code>model.pt</code> 是 PyTorch 格式的模型权重文件，893MB 对语音识别模型来说算小的了——这已经是 “Small” 版本。</p>
+</blockquote>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><h3 id="1-安装-Python"><a href="#1-安装-Python" class="headerlink" title="1. 安装 Python"></a>1. 安装 Python</h3><p>需要 Python 3.8+，推荐 3.10 或 3.11：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">python --version</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-安装依赖"><a href="#2-安装依赖" class="headerlink" title="2. 安装依赖"></a>2. 安装依赖</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pip install funasr modelscope torch torchaudio</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果安装 PyTorch 很慢，可以用国内镜像：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pip install torch torchaudio -i https://mirrors.aliyun.com/pypi/simple/</span><br><span class="line">pip install funasr modelscope -i https://mirrors.aliyun.com/pypi/simple/</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h2><h3 id="最简脚本"><a href="#最简脚本" class="headerlink" title="最简脚本"></a>最简脚本</h3><p>创建 <code>transcribe.py</code>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> funasr <span class="keyword">import</span> AutoModel</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载模型（首次运行会自动下载）</span></span><br><span class="line">model = AutoModel(</span><br><span class="line">    model=<span class="string">&quot;iic/SenseVoiceSmall&quot;</span>,    <span class="comment"># 语音识别模型</span></span><br><span class="line">    trust_remote_code=<span class="literal">True</span>,</span><br><span class="line">    vad_model=<span class="string">&quot;fsmn-vad&quot;</span>,           <span class="comment"># 语音活动检测，自动分段</span></span><br><span class="line">    vad_kwargs=&#123;<span class="string">&quot;max_single_segment_time&quot;</span>: <span class="number">30000</span>&#125;,  <span class="comment"># 最大分段 30 秒</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 识别</span></span><br><span class="line">audio_file = <span class="string">&quot;your-audio.mp3&quot;</span></span><br><span class="line">res = model.generate(</span><br><span class="line">    <span class="built_in">input</span>=audio_file,</span><br><span class="line">    cache=&#123;&#125;,</span><br><span class="line">    language=<span class="string">&quot;auto&quot;</span>,  <span class="comment"># 自动检测语种，也可指定 &quot;zh&quot;</span></span><br><span class="line">    use_itn=<span class="literal">True</span>,     <span class="comment"># 逆文本正则化（数字、日期等转为书面形式）</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出结果</span></span><br><span class="line">text = res[<span class="number">0</span>][<span class="string">&quot;text&quot;</span>]</span><br><span class="line"><span class="built_in">print</span>(text)</span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">python transcribe.py</span><br></pre></td></tr></table></figure>
+
+<h3 id="支持的音频格式"><a href="#支持的音频格式" class="headerlink" title="支持的音频格式"></a>支持的音频格式</h3><p>FunASR 支持常见音频格式，无需额外转换：</p>
+<ul>
+<li>MP3、WAV、FLAC、AAC、OGG、M4A</li>
+<li>单声道 &#x2F; 立体声均可</li>
+<li>任意采样率（内部会自动重采样到 16kHz）</li>
+</ul>
+<h3 id="输出格式说明"><a href="#输出格式说明" class="headerlink" title="输出格式说明"></a>输出格式说明</h3><p>识别结果会包含特殊标签：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;|zh|&gt;&lt;|HAPPY|&gt;&lt;|Speech|&gt;&lt;|withitn|&gt;人一辈子多少还是需要有些运气...</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>标签</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#96;&lt;</td>
+<td>zh</td>
+</tr>
+<tr>
+<td>&#96;&lt;</td>
+<td>HAPPY</td>
+</tr>
+<tr>
+<td>&#96;&lt;</td>
+<td>Speech</td>
+</tr>
+<tr>
+<td>&#96;&lt;</td>
+<td>withitn</td>
+</tr>
+</tbody></table>
+<p>如果你只需要纯文本，可以用正则去掉这些标签：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">clean_text = re.sub(<span class="string">r&#x27;&lt;\|.*?\|&gt;&#x27;</span>, <span class="string">&#x27;&#x27;</span>, text)</span><br><span class="line"><span class="built_in">print</span>(clean_text)</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>AI工具</category>
+      </categories>
+      <tags>
+        <tag>AI</tag>
+        <tag>FunASR</tag>
+        <tag>SenseVoice</tag>
+        <tag>语音识别</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Kimi API 第三方集成指南</title>
+    <url>/kimi-api-integration.html</url>
+    <content><![CDATA[<h1 id="Kimi-API-第三方集成指南"><a href="#Kimi-API-第三方集成指南" class="headerlink" title="Kimi API 第三方集成指南"></a>Kimi API 第三方集成指南</h1><p>Kimi 开放平台支持标准的 OpenAI SDK 调用方式，这意味着你可以在各种兼容 OpenAI API 格式的第三方工具中使用 Kimi API Key。</p>
+<span id="more"></span>
+
+<h2 id="获取-API-Key"><a href="#获取-API-Key" class="headerlink" title="获取 API Key"></a>获取 API Key</h2><ol>
+<li>访问 <a href="https://platform.moonshot.cn/">Kimi 开放平台</a></li>
+<li>登录并完成实名认证</li>
+<li>进入「会员中心」→「API Key 管理」</li>
+<li>点击「创建 API Key」，复制生成的密钥</li>
+</ol>
+<h2 id="核心配置参数"><a href="#核心配置参数" class="headerlink" title="核心配置参数"></a>核心配置参数</h2><p>使用第三方工具时，需要配置以下环境变量：</p>
+<table>
+<thead>
+<tr>
+<th>环境变量</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ANTHROPIC_BASE_URL</code></td>
+<td><code>https://api.kimi.com/coding/</code></td>
+<td>Kimi 的 API 端点</td>
+</tr>
+<tr>
+<td><code>ANTHROPIC_API_KEY</code></td>
+<td><code>sk-kimi-...</code></td>
+<td>你的 Kimi API Key</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意</strong>：虽然变量名包含 <code>ANTHROPIC</code>，但这是为了兼容 Claude Code 等工具的设计。实际调用的是 Kimi 的模型服务。</p>
+</blockquote>
+<h2 id="Windows-配置方法"><a href="#Windows-配置方法" class="headerlink" title="Windows 配置方法"></a>Windows 配置方法</h2><h3 id="PowerShell-临时设置"><a href="#PowerShell-临时设置" class="headerlink" title="PowerShell (临时设置)"></a>PowerShell (临时设置)</h3><p>当前终端会话有效，关闭后失效：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="variable">$env:ANTHROPIC_BASE_URL</span>=<span class="string">&quot;https://api.kimi.com/coding/&quot;</span></span><br><span class="line"><span class="variable">$env:ANTHROPIC_API_KEY</span>=<span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动 Claude Code</span></span><br><span class="line">claude</span><br></pre></td></tr></table></figure>
+
+<h3 id="系统环境变量-永久设置"><a href="#系统环境变量-永久设置" class="headerlink" title="系统环境变量 (永久设置)"></a>系统环境变量 (永久设置)</h3><p>永久生效，推荐给日常使用：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 设置用户级环境变量</span></span><br><span class="line">[<span class="type">Environment</span>]::SetEnvironmentVariable(<span class="string">&quot;ANTHROPIC_BASE_URL&quot;</span>, <span class="string">&quot;https://api.kimi.com/coding/&quot;</span>, <span class="string">&quot;User&quot;</span>)</span><br><span class="line">[<span class="type">Environment</span>]::SetEnvironmentVariable(<span class="string">&quot;ANTHROPIC_API_KEY&quot;</span>, <span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span>, <span class="string">&quot;User&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>设置完成后，<strong>重启终端</strong>使配置生效。</p>
+<h2 id="验证配置"><a href="#验证配置" class="headerlink" title="验证配置"></a>验证配置</h2><p>启动 Claude Code 后，输入以下命令验证模型状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">/status</span><br></pre></td></tr></table></figure>
+
+<p>如果配置正确，你应该能看到模型信息和使用状态。</p>
+<h2 id="支持的模型"><a href="#支持的模型" class="headerlink" title="支持的模型"></a>支持的模型</h2><p>Kimi 开放平台提供以下模型：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>上下文长度</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>kimi-k2.5</code></td>
+<td>256K</td>
+<td>最新版本，性能最强</td>
+</tr>
+<tr>
+<td><code>kimi-k2</code></td>
+<td>128K</td>
+<td>高性价比</td>
+</tr>
+<tr>
+<td><code>kimi-k1.5</code></td>
+<td>128K</td>
+<td>经典稳定版本</td>
+</tr>
+</tbody></table>
+<h2 id="兼容工具列表"><a href="#兼容工具列表" class="headerlink" title="兼容工具列表"></a>兼容工具列表</h2><p>以下工具已通过测试，支持 Kimi API：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>配置方式</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Claude Code</strong></td>
+<td>环境变量</td>
+<td>完全兼容</td>
+</tr>
+<tr>
+<td><strong>Cursor</strong></td>
+<td>设置 → Models → OpenAI API</td>
+<td>选择 OpenAI 兼容模式</td>
+</tr>
+<tr>
+<td><strong>Continue</strong></td>
+<td><code>config.json</code> 配置</td>
+<td>VS Code 插件</td>
+</tr>
+<tr>
+<td><strong>ChatGPT-Next-Web</strong></td>
+<td>自定义接口设置</td>
+<td>选择 OpenAI 兼容</td>
+</tr>
+</tbody></table>
+<h2 id="配置示例：Cursor"><a href="#配置示例：Cursor" class="headerlink" title="配置示例：Cursor"></a>配置示例：Cursor</h2><ol>
+<li>打开 Cursor Settings（<code>Ctrl/Cmd + ,</code>）</li>
+<li>选择「Models」→「OpenAI API」</li>
+<li>配置如下：<ul>
+<li><strong>Base URL</strong>: <code>https://api.kimi.com/coding/v1</code></li>
+<li><strong>API Key</strong>: <code>sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></li>
+<li><strong>Model</strong>: <code>kimi-k2.5</code></li>
+</ul>
+</li>
+</ol>
+<h2 id="配置示例：Continue-插件"><a href="#配置示例：Continue-插件" class="headerlink" title="配置示例：Continue 插件"></a>配置示例：Continue 插件</h2><p>在 VS Code 的 <code>~/.continue/config.json</code> 中添加：</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;models&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;title&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Kimi K2.5&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;provider&quot;</span><span class="punctuation">:</span> <span class="string">&quot;openai&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;model&quot;</span><span class="punctuation">:</span> <span class="string">&quot;kimi-k2.5&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;apiBase&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://api.kimi.com/coding/v1&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;apiKey&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sk-kimi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="费用说明"><a href="#费用说明" class="headerlink" title="费用说明"></a>费用说明</h2><p>Kimi API 采用按量计费模式：</p>
+<ul>
+<li><strong>输入 Token</strong>: 按实际使用量计费</li>
+<li><strong>输出 Token</strong>: 按实际使用量计费</li>
+<li><strong>上下文缓存</strong>: 支持，可降低重复输入成本</li>
+</ul>
+<p>建议开启用量预警，避免意外超支。</p>
+]]></content>
+      <categories>
+        <category>AI工具</category>
+      </categories>
+      <tags>
+        <tag>Claude Code</tag>
+        <tag>Kimi</tag>
+        <tag>API</tag>
+        <tag>Cursor</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MacBook 终端实用工具</title>
+    <url>/terminal-plugins.html</url>
+    <content><![CDATA[<h1 id="MacBook-终端实用工具"><a href="#MacBook-终端实用工具" class="headerlink" title="MacBook 终端实用工具"></a>MacBook 终端实用工具</h1><blockquote>
+<p>macOS 终端效率工具合集，基于 Homebrew 安装，搭配 Zsh 使用。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="总览"><a href="#总览" class="headerlink" title="总览"></a>总览</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>一句话说明</th>
+<th>安装方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fzf</td>
+<td>通用模糊搜索</td>
+<td><code>brew install fzf</code></td>
+</tr>
+<tr>
+<td>fzf-tab</td>
+<td>Tab 补全变模糊搜索</td>
+<td>git clone 到 oh-my-zsh</td>
+</tr>
+<tr>
+<td>zsh-autosuggestions</td>
+<td>历史命令灰色提示</td>
+<td><code>brew install zsh-autosuggestions</code></td>
+</tr>
+<tr>
+<td>zsh-you-should-use</td>
+<td>提醒你用已有的 alias</td>
+<td><code>brew install zsh-you-should-use</code></td>
+</tr>
+<tr>
+<td>zsh-syntax-highlighting</td>
+<td>输入时实时命令着色</td>
+<td><code>brew install zsh-syntax-highlighting</code></td>
+</tr>
+<tr>
+<td>zoxide</td>
+<td>智能目录跳转</td>
+<td><code>brew install zoxide</code></td>
+</tr>
+<tr>
+<td>starship</td>
+<td>跨 Shell 终端提示符</td>
+<td><code>brew install starship</code></td>
+</tr>
+<tr>
+<td>yazi</td>
+<td>终端文件管理器</td>
+<td><code>brew install yazi</code></td>
+</tr>
+<tr>
+<td>lazygit</td>
+<td>终端 Git 可视化工具</td>
+<td><code>brew install lazygit</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="fzf-—-通用模糊搜索"><a href="#fzf-—-通用模糊搜索" class="headerlink" title="fzf — 通用模糊搜索"></a>fzf — 通用模糊搜索</h2><p>终端下的模糊查找神器，不需要记住完整名称，打几个字母就能定位。</p>
+<h3 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h3><ul>
+<li><strong>搜索历史命令</strong>：忘了之前敲过的长命令</li>
+<li><strong>搜索文件</strong>：项目里快速找文件</li>
+<li><strong>配合管道</strong>：对任意列表做模糊筛选</li>
+</ul>
+<h3 id="常用快捷键"><a href="#常用快捷键" class="headerlink" title="常用快捷键"></a>常用快捷键</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 模糊搜索历史命令（替代默认的 Ctrl+R）</span></span><br><span class="line">Ctrl+R</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模糊搜索当前目录下的文件</span></span><br><span class="line">Ctrl+T</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模糊搜索目录并 cd 进去</span></span><br><span class="line">Alt+C</span><br></pre></td></tr></table></figure>
+
+<h3 id="实用示例"><a href="#实用示例" class="headerlink" title="实用示例"></a>实用示例</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 搜索文件并用 vim 打开</span></span><br><span class="line">vim $(fzf)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 搜索进程并 kill</span></span><br><span class="line"><span class="built_in">kill</span> -9 $(ps aux | fzf | awk <span class="string">&#x27;&#123;print $2&#125;&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 搜索 git 分支并切换</span></span><br><span class="line">git checkout $(git branch | fzf)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 预览文件内容</span></span><br><span class="line">fzf --preview <span class="string">&#x27;cat &#123;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="fzf-tab-—-Tab-模糊补全"><a href="#fzf-tab-—-Tab-模糊补全" class="headerlink" title="fzf-tab — Tab 模糊补全"></a>fzf-tab — Tab 模糊补全</h2><p>将 Zsh 默认的 Tab 补全替换为 fzf 的模糊搜索界面。</p>
+<h3 id="使用场景-1"><a href="#使用场景-1" class="headerlink" title="使用场景"></a>使用场景</h3><ul>
+<li><strong>补全文件路径</strong>：目录下文件太多，Tab 一下直接搜</li>
+<li><strong>补全命令参数</strong>：git、docker 等命令的子命令&#x2F;选项补全</li>
+<li><strong>补全环境变量</strong>：<code>$</code> 后按 Tab 模糊搜索变量名</li>
+</ul>
+<h3 id="实用示例-1"><a href="#实用示例-1" class="headerlink" title="实用示例"></a>实用示例</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 输入 cd 后按 Tab，弹出模糊搜索界面选择目录</span></span><br><span class="line"><span class="built_in">cd</span> &lt;Tab&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># git checkout 后按 Tab，模糊搜索分支名</span></span><br><span class="line">git checkout &lt;Tab&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># kill 后按 Tab，直接模糊搜索进程</span></span><br><span class="line"><span class="built_in">kill</span> &lt;Tab&gt;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>和原生 Tab 的区别：原生补全列出所有候选项让你翻页，fzf-tab 让你直接打字过滤。</p>
+</blockquote>
+<hr>
+<h2 id="zsh-autosuggestions-—-历史命令灰色提示"><a href="#zsh-autosuggestions-—-历史命令灰色提示" class="headerlink" title="zsh-autosuggestions — 历史命令灰色提示"></a>zsh-autosuggestions — 历史命令灰色提示</h2><p>根据历史记录，在光标后方显示灰色的补全建议，按右箭头采纳。</p>
+<h3 id="使用场景-2"><a href="#使用场景-2" class="headerlink" title="使用场景"></a>使用场景</h3><ul>
+<li><strong>重复执行命令</strong>：每天都要跑的 dev server、构建命令</li>
+<li><strong>长命令复用</strong>：SSH 连接、docker 命令等记不住的长串</li>
+</ul>
+<h3 id="操作方式"><a href="#操作方式" class="headerlink" title="操作方式"></a>操作方式</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 输入 npm，自动提示上次输入的 npm run dev</span></span><br><span class="line">npm|  run dev     <span class="comment"># 灰色部分为建议</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 按 → 采纳整条建议</span></span><br><span class="line"><span class="comment"># 按 Ctrl+→ 逐词采纳（只接受一个单词）</span></span><br><span class="line"><span class="comment"># 继续打字则忽略建议</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>工具推荐</category>
+      </categories>
+      <tags>
+        <tag>工具</tag>
+        <tag>终端</tag>
+        <tag>Zsh</tag>
+        <tag>Homebrew</tag>
+      </tags>
+  </entry>
 </search>
